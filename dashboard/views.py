@@ -7,13 +7,18 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from decimal import Decimal
 from .models import (
-    Producto, Venta, DetalleVenta, Cliente, Proveedor,
-    ImportacionLote, DetalleImportacion, CategoriaProducto
+    Productos, Ventas, Detalle_Ventas, Clientes, Proveedores,
+    Importaciones, Detalle_Importaciones, Categorias
 )
 
 @login_required
 def dashboard_principal(request):
-    """Dashboard principal con métricas generales"""
+    return render(request, 'dashboard/principal.html')
+
+""" Modificar código para que se adapte al proyecto """
+"""
+@login_required
+def dashboard_principal(request):
     
     # Filtros de fecha
     hoy = timezone.now().date()
@@ -21,18 +26,18 @@ def dashboard_principal(request):
     mes_actual = hoy.replace(day=1)
     
     # Métricas de ventas
-    ventas_mes = Venta.objects.filter(
+    ventas_mes = Ventas.objects.filter(
         fecha__gte=mes_actual,
-        estado__in=['PAGADO', 'PARCIAL']
+        estado__in=['True']
     )
     
     total_ventas_mes = ventas_mes.aggregate(
         total=Sum('total')
     )['total'] or 0
     
-    ventas_hoy = Venta.objects.filter(
+    ventas_hoy = Ventas.objects.filter(
         fecha__date=hoy,
-        estado__in=['PAGADO', 'PARCIAL']
+        estado__in=['True']
     )
     
     total_ventas_hoy = ventas_hoy.aggregate(
@@ -40,9 +45,9 @@ def dashboard_principal(request):
     )['total'] or 0
     
     # Productos más vendidos este mes
-    productos_top = DetalleVenta.objects.filter(
+    productos_top = Detalle_Ventas.objects.filter(
         venta__fecha__gte=mes_actual,
-        venta__estado__in=['PAGADO', 'PARCIAL']
+        venta__estado__in=['True']
     ).values(
         'producto__nombre',
         'producto__marca',
@@ -53,28 +58,27 @@ def dashboard_principal(request):
     ).order_by('-cantidad_vendida')[:10]
     
     # Inventario crítico
-    productos_bajo_stock = Producto.objects.filter(
-        stock_actual__lte=F('stock_minimo'),
-        activo=True
+    productos_bajo_stock = Productos.objects.filter(
+        stock__lte=F('stock_minimo'),
     ).order_by('stock_actual')[:10]
     
     # Importaciones pendientes
-    importaciones_pendientes = ImportacionLote.objects.filter(
-        estado__in=['PLANIFICADO', 'EN_TRANSITO', 'ADUANA']
-    ).order_by('fecha_estimada_llegada')[:5]
+    importaciones_pendientes = Importaciones.objects.filter(
+        estado__in=['True']
+    ).order_by('fecha')[:5]
     
     # Ventas por tipo de producto (este mes)
-    ventas_por_tipo = DetalleVenta.objects.filter(
+    ventas_por_tipo = Detalle_Ventas.objects.filter(
         venta__fecha__gte=mes_actual,
-        venta__estado__in=['PAGADO', 'PARCIAL']
+        venta__estado__in=['True']
     ).values('producto__tipo').annotate(
         total=Sum(F('cantidad') * F('precio_unitario'))
     ).order_by('-total')
     
     # Clientes top
-    clientes_top = Venta.objects.filter(
+    clientes_top = Ventas.objects.filter(
         fecha__gte=hace_30_dias,
-        estado__in=['PAGADO', 'PARCIAL']
+        estado__in=['True']
     ).values(
         'cliente__nombre',
         'cliente__tipo'
@@ -131,7 +135,6 @@ def dashboard_principal(request):
 
 @login_required
 def dashboard_inventario(request):
-    """Dashboard de inventario y stock"""
     
     # Productos por categoría
     productos_por_categoria = Producto.objects.filter(
@@ -203,7 +206,6 @@ def dashboard_inventario(request):
 
 @login_required
 def dashboard_ventas(request):
-    """Dashboard de análisis de ventas"""
     
     # Parámetros de filtro
     fecha_inicio = request.GET.get('fecha_inicio')
@@ -296,7 +298,7 @@ def dashboard_ventas(request):
 
 @login_required
 def dashboard_importaciones(request):
-    """Dashboard de importaciones"""
+    
     
     # Importaciones por estado
     importaciones_por_estado = ImportacionLote.objects.values(
@@ -345,3 +347,4 @@ def dashboard_importaciones(request):
     }
     
     return render(request, 'dashboard/importaciones.html', context)
+"""

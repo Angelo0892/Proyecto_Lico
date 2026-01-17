@@ -50,7 +50,7 @@ class Permisos(models.Model):
     descripcion = models.CharField(max_length=100, null=False)
 
     def __str__(self):
-        return f"{self.nombre_premiso - self.rol_id.nombre_rol}"
+        return f"{self.nombre_premiso} - {self.rol_id.nombre_rol}"
 
 class Auditoria(models.Model):
     usuario_id = models.ForeignKey(Usuarios, on_delete=models.PROTECT, null=False)
@@ -134,9 +134,6 @@ class Categorias(models.Model):
         ('LICOR', 'Licor'),
     ]
 
-    class Meta:
-        berbose_name_plural = "Categorias"
-
     def __str__(self):
         return self.nombre
 
@@ -185,12 +182,12 @@ class Detalle_Importaciones(models.Model):
 class Detalle_Ventas(models.Model):
     venta_id = models.ForeignKey(Ventas, on_delete=models.CASCADE, null=False)
     producto_id = models.ForeignKey(Productos, on_delete=models.CASCADE, null=False)
-    cantidad = models.IntegerChoices(null=False)
+    cantidad = models.IntegerField(null=False)
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     sub_total = models.DecimalField(max_digits=10, decimal_places=2, null=False)
 
     def __str__(self):
-        return f"{self.producto_id.nombre - self.sub_total}"
+        return f"{self.producto_id.nombre} - {self.sub_total}"
     
 class Devoluciones(models.Model):
     usuario_id = models.ForeignKey(Usuarios, on_delete=models.CASCADE, null=False)

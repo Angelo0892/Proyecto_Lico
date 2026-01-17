@@ -1,10 +1,10 @@
 # admin.py
 from django.contrib import admin
 from .models import (
-    Proveedor, CategoriaProducto, Producto, ImportacionLote,
-    DetalleImportacion, Cliente, Venta, DetalleVenta
+    Proveedores, Categorias, Productos, Importaciones,
+    Detalle_Importaciones, Clientes, Ventas, Detalle_Ventas
 )
-
+"""
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
     list_display = ['nombre', 'pais_origen', 'email', 'telefono', 'calificacion', 'activo']
@@ -128,3 +128,4 @@ class VentaAdmin(admin.ModelAdmin):
         if not change and not obj.vendedor:
             obj.vendedor = request.user
         super().save_model(request, obj, form, change)
+"""
