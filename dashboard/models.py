@@ -4,34 +4,124 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from decimal import Decimal
 
-class Proveedor(models.Model):
-    nombre = models.CharField(max_length=200)
-    pais_origen = models.CharField(max_length=100)
-    contacto = models.CharField(max_length=200)
-    email = models.EmailField()
-    telefono = models.CharField(max_length=20)
-    calificacion = models.DecimalField(max_digits=3, decimal_places=2, default=0)
-    activo = models.BooleanField(default=True)
+class Metodos_Pago(models.Model):
+    nombre = models.CharField(max_length=30, null=False)
+    descripcion = models.CharField(max_length=100, null=False)
+
+class Clientes(models.Model):
+    ci = models.CharField(max_length=20, null=True)
+    nit = models.CharField(max_length=20, null=True)
+    tipo_cliente = models.CharField(max_length=20, null=False)
+    nombre = models.CharField(max_length=50, null=False)
+    apellido1 = models.CharField(max_length=50, null=True)
+    apellido2 = models.CharField(max_length=50, null=True)
+    direccion = models.CharField(max_length=200, null=True)
+    telefono = models.CharField(max_length=30, null=False)
+    email = models.CharField(max_length=80, null=False)
+
+    class Meta:
+        verbose_name_plural = "Clientes"
+
+    def __str__(self):
+        return f"{self.nombre}"
+
+class Roles(models.Model):
+    nombre_rol = models.CharField(max_length=30, null=False)
+    descripcion = models.CharField(max_length=200, null=False)
+
+class Usuarios(models.Model):
+    rol_id = models.ForeignKey(Roles, on_delete=models.SET_NULL, null=True)
+    nombre_usuario = models.CharField(max_length=50, null=False, unique=True)
+    clave = models.CharField(max_length=150, null=False)
+    correo = models.EmailField(unique=True)
+    nombre = models.CharField(max_length=50, null=False)
+    apellido1 = models.CharField(max_length=50, null=False)
+    Apellido2 = models.CharField(max_length=50, null=False)
+    telefono = models.CharField(max_length=20, null=False)
+    direccion = models.CharField(max_length=150, null=False)
+    estado = models.BooleanField(null=False)
+
+    def __str__(self):
+        return self.nombre_usuario
+
+class Permisos(models.Model):
+    rol_id = models.ForeignKey(Roles, on_delete=models.CASCADE, null=False)
+    nombre_premiso = models.CharField(max_length=50, null=False)
+    descripcion = models.CharField(max_length=100, null=False)
+
+    def __str__(self):
+        return f"{self.nombre_premiso - self.rol_id.nombre_rol}"
+
+class Auditoria(models.Model):
+    usuario_id = models.ForeignKey(Usuarios, on_delete=models.PROTECT, null=False)
+    fecha = models.DateField(null=False)
+    accion = models.CharField(max_length=100, null=False)
+    detalle = models.CharField(max_length=200, null=False)
+
+    def __str__(self):
+        return f"{self.usuario_id.nombre_usuario - self.accion}"
+
+class Ventas(models.Model):
+    cliente_id = models.ForeignKey(Clientes, on_delete=models.PROTECT, null=False)
+    usuario_id = models.ForeignKey(Usuarios, on_delete=models.PROTECT, null=False)
+    fecha = models.DateField(null=False)
+    estado = models.BooleanField(null=False)
+    total = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+
+    def __str__(self):
+        return self.fecha
+
+class Facturas(models.Model):
+    venta_id = models.ForeignKey(Ventas, on_delete=models.CASCADE, null=False)
+    numero_factura = models.CharField(max_length=20, null=False)
+    fecha_emision = models.DateField(null=False)
+    estado = models.BooleanField(null=False)
+
+    def __str__(self):
+        return self.numero_factura
+
+class Pagos(models.Model):
+    factura_id = models.ForeignKey(Facturas, on_delete=models.CASCADE, null=False)
+    factura_registro = models.DateField(null=False)
+    monto_total = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+
+    def __str__(self):
+        return self.factura_registro
+
+class Detalle_Pagos(models.Model):
+    pago_id = models.ForeignKey(Pagos, on_delete=models.CASCADE, null=False)
+    metodo_pago_id = models.ForeignKey(Metodos_Pago, on_delete=models.CASCADE, null=False)
+    fecha = models.DateField(null=False)
+    monto = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    referencia_transaccion = models.CharField(max_length=50, null=False)
+
+    def __str__(self):
+        return self.referencia_transaccion
+    
+
+class Proveedores(models.Model):
+    nit = models.CharField(max_length=20, null=False)
+    tipo_preedor = models.CharField(max_length=20, null=False)
+    nombre = models.CharField(max_length=50, null=False)
+    apellido1 = models.CharField(max_length=50, null=True)
+    apellido2 = models.CharField(max_length=50, null=True)
+    pais = models.CharField(max_length=50, null=False)
+    contacto = models.CharField(max_length=200, null=False)
+    telefono = models.CharField(max_length=20, null=False)
+    correo = models.EmailField(null=False)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name_plural = "Proveedores"
 
     def __str__(self):
-        return f"{self.nombre} - {self.pais_origen}"
+        return f"{self.nombre} - {self.pais}"
 
-class CategoriaProducto(models.Model):
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True)
+class Categorias(models.Model):
+    nombre = models.CharField(max_length=50, null=False)
+    descripcion = models.CharField(max_length=150, null=True)
 
-    class Meta:
-        verbose_name_plural = "Categorías de Productos"
-
-    def __str__(self):
-        return self.nombre
-
-class Producto(models.Model):
-    TIPOS_ALCOHOL = [
+    CATEGORIAS_ALCOHOL = [
         ('VINO', 'Vino'),
         ('WHISKY', 'Whisky'),
         ('RON', 'Ron'),
@@ -44,136 +134,74 @@ class Producto(models.Model):
         ('LICOR', 'Licor'),
     ]
 
-    codigo = models.CharField(max_length=50, unique=True)
-    nombre = models.CharField(max_length=200)
-    tipo = models.CharField(max_length=20, choices=TIPOS_ALCOHOL)
-    categoria = models.ForeignKey(CategoriaProducto, on_delete=models.SET_NULL, null=True)
-    marca = models.CharField(max_length=100)
-    volumen_ml = models.IntegerField()
-    graduacion_alcoholica = models.DecimalField(max_digits=4, decimal_places=2)
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
-    precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
-    stock_actual = models.IntegerField(default=0)
-    stock_minimo = models.IntegerField(default=10)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    activo = models.BooleanField(default=True)
+    class Meta:
+        berbose_name_plural = "Categorias"
+
+    def __str__(self):
+        return self.nombre
+
+class Ubicacion(models.Model):
+    nombre = models.CharField(max_length=50)
+    detalle = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = "Categorías de Productos"
+
+    def __str__(self):
+        return self.nombre
+
+class Productos(models.Model):
+    proveedor_id = models.ForeignKey(Proveedores, on_delete=models.CASCADE, null=False)
+    categoria_id = models.ForeignKey(Categorias, on_delete=models.SET_NULL, null=True)
+    ubicacion_id = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True)
+    stock = models.IntegerField(null=False)
+    nombre = models.CharField(max_length=80, null=False)
+    marca = models.CharField(max_length=50, null=False)
+    origen = models.CharField(max_length=50, null=False)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, null=False)
 
     def __str__(self):
         return f"{self.nombre} - {self.marca}"
 
-    @property
-    def margen_ganancia(self):
-        if self.precio_compra > 0:
-            return ((self.precio_venta - self.precio_compra) / self.precio_compra) * 100
-        return 0
-
-    @property
-    def necesita_reorden(self):
-        return self.stock_actual <= self.stock_minimo
-
-class ImportacionLote(models.Model):
-    ESTADOS = [
-        ('PLANIFICADO', 'Planificado'),
-        ('EN_TRANSITO', 'En Tránsito'),
-        ('ADUANA', 'En Aduana'),
-        ('RECIBIDO', 'Recibido'),
-        ('CANCELADO', 'Cancelado'),
-    ]
-
-    numero_lote = models.CharField(max_length=50, unique=True)
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    fecha_orden = models.DateField()
-    fecha_estimada_llegada = models.DateField()
-    fecha_llegada_real = models.DateField(null=True, blank=True)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='PLANIFICADO')
-    costo_total = models.DecimalField(max_digits=12, decimal_places=2)
-    costo_envio = models.DecimalField(max_digits=10, decimal_places=2)
-    costo_aduana = models.DecimalField(max_digits=10, decimal_places=2)
-    notas = models.TextField(blank=True)
-    creado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name_plural = "Lotes de Importación"
+class Importaciones(models.Model):
+    usuario_id = models.ForeignKey(Usuarios, on_delete=models.PROTECT, null=False)
+    proveedor_id = models.ForeignKey(Proveedores, on_delete=models.PROTECT, null=False)
+    fecha = models.DateField(null=False)
+    estado = models.BooleanField(null=False)
+    costo_total = models.DecimalField(max_digits=10, decimal_places=2, null=False)
 
     def __str__(self):
-        return f"Lote {self.numero_lote} - {self.proveedor.nombre}"
+        return self.costo_total
 
-    @property
-    def costo_total_completo(self):
-        return self.costo_total + self.costo_envio + self.costo_aduana
-
-class DetalleImportacion(models.Model):
-    lote = models.ForeignKey(ImportacionLote, on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.IntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+class Detalle_Importaciones(models.Model):
+    importacion_id = models.ForeignKey(Importaciones, on_delete=models.CASCADE, null=False)
+    producto_id = models.ForeignKey(Productos, on_delete=models.PROTECT, null=False)
+    cantidad = models.IntegerField(null=False)
+    costo_unitario = models.DecimalField(max_digits=10, decimal_places=2, null=False)
 
     def __str__(self):
-        return f"{self.producto.nombre} - {self.cantidad} unidades"
+        return f"{self.producto_id.nombre} - {self.cantidad} unidades"
 
-    @property
-    def subtotal(self):
-        return self.cantidad * self.precio_unitario
-
-class Cliente(models.Model):
-    TIPOS_CLIENTE = [
-        ('MINORISTA', 'Minorista'),
-        ('MAYORISTA', 'Mayorista'),
-        ('DISTRIBUIDOR', 'Distribuidor'),
-        ('RESTAURANTE', 'Restaurante/Bar'),
-    ]
-
-    nombre = models.CharField(max_length=200)
-    tipo = models.CharField(max_length=20, choices=TIPOS_CLIENTE)
-    ruc_dni = models.CharField(max_length=20, unique=True)
-    direccion = models.TextField()
-    telefono = models.CharField(max_length=20)
-    email = models.EmailField()
-    limite_credito = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    activo = models.BooleanField(default=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
+class Detalle_Ventas(models.Model):
+    venta_id = models.ForeignKey(Ventas, on_delete=models.CASCADE, null=False)
+    producto_id = models.ForeignKey(Productos, on_delete=models.CASCADE, null=False)
+    cantidad = models.IntegerChoices(null=False)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    sub_total = models.DecimalField(max_digits=10, decimal_places=2, null=False)
 
     def __str__(self):
-        return f"{self.nombre} ({self.tipo})"
+        return f"{self.producto_id.nombre - self.sub_total}"
+    
+class Devoluciones(models.Model):
+    usuario_id = models.ForeignKey(Usuarios, on_delete=models.CASCADE, null=False)
+    venta_id = models.ForeignKey(Ventas, on_delete=models.CASCADE, null=False)
+    cliente_id = models.ForeignKey(Clientes, on_delete=models.CASCADE, null=False)
+    fecha = models.DateField(null=False)
+    eatado = models.BooleanField(null=False)
+    motivo = models.CharField(max_length=150, null=False)
 
-class Venta(models.Model):
-    ESTADOS = [
-        ('PENDIENTE', 'Pendiente'),
-        ('PAGADO', 'Pagado'),
-        ('PARCIAL', 'Pago Parcial'),
-        ('CANCELADO', 'Cancelado'),
-    ]
-
-    METODOS_PAGO = [
-        ('EFECTIVO', 'Efectivo'),
-        ('TRANSFERENCIA', 'Transferencia'),
-        ('TARJETA', 'Tarjeta'),
-        ('CREDITO', 'Crédito'),
-    ]
-
-    numero_factura = models.CharField(max_length=50, unique=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    fecha = models.DateTimeField(default=timezone.now)
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
-    impuesto = models.DecimalField(max_digits=10, decimal_places=2)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='PENDIENTE')
-    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO)
-    vendedor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    notas = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"Venta {self.numero_factura} - {self.cliente.nombre}"
-
-class DetalleVenta(models.Model):
-    venta = models.ForeignKey(Venta, on_delete=models.CASCADE, related_name='detalles')
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.IntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-    descuento = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-
-    @property
-    def subtotal(self):
-        return (self.cantidad * self.precio_unitario) * (1 - self.descuento / 100)
+class Detalle_Devoluciones(models.Model):
+    devolucion_id = models.ForeignKey(Devoluciones, on_delete=models.CASCADE, null=False)
+    producto_id = models.ForeignKey(Productos, on_delete=models.CASCADE, null=False)
+    cantidad = models.IntegerField(null=False)
+    observacion = models.CharField(max_length=150, null=False)
