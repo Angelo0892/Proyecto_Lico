@@ -11,5 +11,117 @@
         <a href="{% url 'dashboard:principal' %}" class="btn btn-primary">Volver al Inicio</a>
     </div>
  -->
+<div class="p-5 text-center">
+
+    <h1>Inventario</h1>
+
+    <h2>Productos</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Marca</th>
+                <th>País de Origen</th>
+                <th>Stock</th>
+                <th>Precio Unitario</th>
+                <th>Categoria</th>
+                <th>Ubicación en Almacen</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in valor_total_inventario %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.marca }}</td>
+                <td>{{ producto.origen }}</td>
+                <td>{{ producto.stock }}</td>
+                <td>{{ producto.precio_unitario}}</td>
+                <td>{{ producto.categoria_id.nombre }}</td>
+                <td>{{ producto.ubicacion_id.nombre }}</td>
+                <td>
+                    
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No hay productos</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 1. Valor total del inventario por producto -->
+    <h2>Valor Total del Inventario</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Stock Total</th>
+                <th>Valor Inventario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in valor_total_inventario %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.cantidad }}</td>
+                <td>{{ producto.stock_total }}</td>
+                <td>${{ producto.valor_inventario|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No hay productos</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- 2. Productos que necesitan reorden -->
+    <h2>Productos con Stock Bajo</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Stock Actual</th>
+                <th>Proveedor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos_reorden %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.stock }}</td>
+                <td>{{ producto.proveedor_id.nombre }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">No hay productos con stock bajo</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <!-- 3. Productos sin movimiento -->
+    <h2>Productos sin movimiento en los últimos 30 días</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos_sin_movimiento %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.stock }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2">Todos los productos tuvieron ventas</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 
 {% endblock %}

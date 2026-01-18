@@ -12,6 +12,8 @@
 </head>
 <body>
     <!-- Sidebar -->
+    <!--
+    
     <nav class="sidebar">
         <div class="logo">
             <i class="bi bi-cup-straw"></i> Importadora
@@ -22,23 +24,30 @@
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard:ventas' %}">
-                    <i class="bi bi-graph-up"></i> Ventas
-                </a>
-            </li>
+            
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'dashboard:inventario' %}">
                     <i class="bi bi-box-seam"></i> Inventario
                 </a>
             </li>
+            
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard:importaciones' %}">
+                <a class="nav-link" href="">
+                    <i class="bi bi-graph-up"></i> Ventas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="">
                     <i class="bi bi-truck"></i> Importaciones
                 </a>
             </li>
+            
+            
         </ul>
     </nav>
+
+    -->
+    
 
     {% block content %}
     {% endblock %}
