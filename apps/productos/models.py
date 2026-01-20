@@ -1,5 +1,4 @@
 from django.db import models
-from apps.inventario.models import Proveedores
 
 class Categorias(models.Model):
     nombre = models.CharField(max_length=50)
@@ -19,7 +18,7 @@ class Ubicacion(models.Model):
         return self.nombre
 
 class Productos(models.Model):
-    proveedor_id = models.ForeignKey(Proveedores, on_delete=models.CASCADE)
+    proveedor_id = models.ForeignKey('inventario.Proveedores', on_delete=models.CASCADE)
     categoria_id = models.ForeignKey(Categorias, on_delete=models.SET_NULL, null=True)
     ubicacion_id = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True)
     stock = models.IntegerField()

@@ -1,6 +1,5 @@
 from django.db import models
 from apps.usuarios.models import Usuarios
-from apps.productos.models import Productos
 from django.conf import settings
 
 
@@ -34,7 +33,7 @@ class Importaciones(models.Model):
 
 class Detalle_Importaciones(models.Model):
     importacion_id = models.ForeignKey(Importaciones, on_delete=models.CASCADE)
-    producto_id = models.ForeignKey(Productos, on_delete=models.PROTECT)
+    producto_id = models.ForeignKey('productos.Productos', on_delete=models.PROTECT)
     cantidad = models.IntegerField()
     costo_unitario = models.DecimalField(max_digits=10, decimal_places=2)
 

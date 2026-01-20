@@ -13,9 +13,4 @@ urlpatterns = [
     #path('categorias/', categorias),
 
     #Acceso a inventario
-
-    #path('inventario/', inventario.inventario, name='inventario'),
-    #path('inventario/producto/guardar', inventario.guardar_producto, name='inventario.producto.guardar'),
-    #path('inventario/producto/<int:id>', inventario.editar_producto, name='inventario.producto.editar'),
-    #path('inventario/producto/<int:id>/eliminar/', inventario.eliminar_producto, name='inventario.producto.eliminar'),    
 ]

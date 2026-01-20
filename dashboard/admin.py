@@ -1,10 +1,13 @@
 # admin.py
 from django.contrib import admin
+
+
+"""
 from .models import (
     Proveedores, Categorias, Productos, Importaciones,
     Detalle_Importaciones, Clientes, Ventas, Detalle_Ventas
 )
-"""
+
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
     list_display = ['nombre', 'pais_origen', 'email', 'telefono', 'calificacion', 'activo']

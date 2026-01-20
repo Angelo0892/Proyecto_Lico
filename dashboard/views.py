@@ -6,10 +6,12 @@ from django.db.models.functions import TruncMonth, TruncDate
 from django.utils import timezone
 from datetime import timedelta, datetime
 from decimal import Decimal
-from .models import (
-    Productos, Ventas, Detalle_Ventas, Clientes, Proveedores,
-    Importaciones, Detalle_Importaciones, Categorias
+from apps.clientes.models import Clientes
+from apps.inventario.models import (
+    Proveedores, Importaciones, Detalle_Importaciones
 )
+from apps.productos.models import Productos, Categorias
+from apps.ventas.models import Ventas, Detalle_Ventas
 
 @login_required
 def principal(request):

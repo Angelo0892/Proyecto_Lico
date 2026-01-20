@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'apps.ventas.apps.VentasConfig',
 ]
 
+AUTH_USER_MODEL = 'usuarios.Usuarios'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
