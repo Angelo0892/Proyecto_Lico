@@ -39,16 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dashboard',
 
-    # apps establecidas
-    'apps.clientes',
-    'apps.inventario',
-    'apps.pagos',
-    'apps.productos',
-    'apps.usuarios',
-    'apps.ventas',
+    
 ]
 
-AUTH_USER_MODEL = 'usuarios.Usuarios'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

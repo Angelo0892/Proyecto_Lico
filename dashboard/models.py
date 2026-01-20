@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from decimal import Decimal
 
+"""
 class Metodos_Pago(models.Model):
     nombre = models.CharField(max_length=30, null=False)
     descripcion = models.CharField(max_length=100, null=False)
@@ -202,3 +203,4 @@ class Detalle_Devoluciones(models.Model):
     producto_id = models.ForeignKey(Productos, on_delete=models.CASCADE, null=False)
     cantidad = models.IntegerField(null=False)
     observacion = models.CharField(max_length=150, null=False)
+"""
