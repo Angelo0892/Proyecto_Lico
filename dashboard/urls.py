@@ -1,7 +1,6 @@
 # urls.py
 from django.urls import path
 from . import views
-from .controls import inventario, categorias
 
 app_name = 'dashboard'
 
