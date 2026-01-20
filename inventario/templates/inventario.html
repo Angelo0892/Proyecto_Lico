@@ -15,6 +15,8 @@
 
     <h1>Inventario</h1>
 
+    <a href="{% url 'dashboard:inventario.producto.guardar'%}">Agregar Producto</a>
+
     <h2>Productos</h2>
     <table>
         <thead>
@@ -43,7 +45,14 @@
                     
                     <a href="{% url 'dashboard:inventario.producto.editar' producto.id %}">Actualizar</a>
                     
-                    <!-- <a href=""></a> -->
+                    <form method="post" action="{% url 'dashboard:inventario.producto.eliminar' producto.id %}"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    </form>
+
                 </td>
             </tr>
             {% empty %}

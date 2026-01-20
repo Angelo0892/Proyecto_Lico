@@ -12,7 +12,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <!--
+    
     
     <nav class="sidebar">
         <div class="logo">
@@ -26,19 +26,14 @@
             </li>
             
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard:inventario' %}">
+                <a class="nav-link" href="{% url 'dashboard:importaciones' %}">
                     <i class="bi bi-box-seam"></i> Inventario
                 </a>
             </li>
             
             <li class="nav-item">
-                <a class="nav-link" href="">
+                <a class="nav-link" href="{% url 'dashboard:ventas' %}">
                     <i class="bi bi-graph-up"></i> Ventas
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="">
-                    <i class="bi bi-truck"></i> Importaciones
                 </a>
             </li>
             
@@ -46,8 +41,6 @@
         </ul>
     </nav>
 
-    -->
-    
 
     {% block content %}
     {% endblock %}

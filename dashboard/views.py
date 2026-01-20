@@ -16,7 +16,7 @@ def principal(request):
     return render(request, 'dashboard/principal.html')
 
 """ Modificar código para que se adapte al proyecto """
-"""
+
 @login_required
 def dashboard_principal(request):
     
@@ -278,4 +278,3 @@ def dashboard_importaciones(request):
     }
     
     return render(request, 'dashboard/importaciones.html', context)
-"""
