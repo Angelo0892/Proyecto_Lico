@@ -40,8 +40,10 @@
                 <td>{{ producto.categoria_id.nombre }}</td>
                 <td>{{ producto.ubicacion_id.nombre }}</td>
                 <td>
-                    <a href="{% url 'dashboard:inventario.producto' producto.id %}">Actualizar</a>
-                    <a href="{% url 'dashboard:eliminar_producto' producto%}"></a>
+                    
+                    <a href="{% url 'dashboard:inventario.producto.editar' producto.id %}">Actualizar</a>
+                    
+                    <!-- <a href=""></a> -->
                 </td>
             </tr>
             {% empty %}

@@ -2,9 +2,10 @@ from datetime import timedelta
 from django.db.models import Sum, Count, F
 from django.utils import timezone
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from ..models import Productos, Detalle_Ventas
+from ..forms import productos
 
 @login_required
 def inventario(request):
@@ -75,12 +76,15 @@ def inventario(request):
     return render(request, 'dashboard/inventario/inventario.html', context)
 
 @login_required
-def producto(request, id):
+def editar_producto(request, id):
 
-    producto = Productos.objects.get(id = id)
+    producto = get_object_or_404(Productos, id = id)
+
+    form = productos.formulario_producto(instance=producto)
 
     context = {
         'producto': producto,
+        'form': form,
     }
 
     return render(request, 'dashboard/inventario/producto.html', context)

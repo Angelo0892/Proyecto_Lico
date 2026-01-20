@@ -10,7 +10,7 @@ urlpatterns = [
 
     #Acceso a inventario
     path('inventario/', inventario.inventario, name='inventario'),
-    path('inventario/producto/<int:id>', inventario.producto, name='inventario.producto'),
+    path('inventario/producto/<int:id>', inventario.editar_producto, name='inventario.producto.editar'),
     path('inventario/producto/<int:id>/eliminar/', inventario.eliminar_producto, name='inventario.producto.eliminar'),
     path('inventario/producto/<int:id>/actualizar', inventario.actualizar_producto, name='inventario.producto.actualizar')
 
