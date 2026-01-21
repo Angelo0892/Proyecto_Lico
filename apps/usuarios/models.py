@@ -6,6 +6,7 @@ from django.conf import settings
 # 1️⃣ Manager personalizado
 # =========================
 class UsuarioManager(BaseUserManager):
+
     def create_user(self, correo, nombre_usuario, password=None, **extra_fields):
         if not correo:
             raise ValueError("El usuario debe tener un correo electrónico")
@@ -24,6 +25,11 @@ class UsuarioManager(BaseUserManager):
 # 2️⃣ Roles
 # =========================
 class Roles(models.Model):
+
+    class Meta:
+        verbose_name = "Roles"
+        verbose_name_plural = "Roles"
+
     nombre_rol = models.CharField(max_length=50, unique=True)
     descripcion = models.CharField(max_length=200)
 
