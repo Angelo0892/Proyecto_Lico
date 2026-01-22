@@ -1,8 +1,54 @@
+from django.db.models import Q
+from django.core.paginator import Paginator
 from django.shortcuts import render
+from 
+from .models import Proveedores
 
 # Create your views here.
 
 def index(request):
+    return 0
+
+def index_proveedor(request):
+
+    query = request.GET.get('search', '')
+
+    lista_proveedores = Proveedores.objects.all().order_by("nombre")
+
+    if query:
+        lista_proveedores = lista_proveedores.filter(
+            Q(nombre__icontains=query) |
+            Q(apellido_1__icontains=query) |
+            Q(apellido_2__icontains=query) |
+            Q(tipo_proveedor__icontains=query) |
+            Q(contacto__icontains=query) |
+            Q(telefono__icontains=query) |
+            Q(correo__icontains=query) |
+            Q(pais__icontains=query)
+        )
+
+    paginacion = Paginator(lista_proveedores, 10)
+    numero_pagina = request.GET.get('page')
+    proveedores = paginacion.get_page(numero_pagina)
+
+    context = {
+        "proveedores": proveedores
+    }
+
+    return render (request, "proveedores/index_proveedor.html", context)
+
+def crear_proveedor(request):
+
+    #if request.method == 'POST':
+        #form
+    
+
+    return 0
+
+def editar_proveedor(request):
+    return 0
+
+def eliminar_proveedor(request):
     return 0
 
 """
