@@ -9,6 +9,21 @@
 
     <a href="{% url 'productos:crear_producto' %}">Agregar Producto</a>
 
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Buscar producto..."
+                value="{{ query }}"
+            >
+            <button class="btn btn-primary" type="submit">
+                Buscar
+            </button>
+        </div>
+    </form>
+
     <h2>Productos</h2>
     <table>
         <thead>

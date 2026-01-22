@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q
 from .models import Productos, Categorias, Ubicacion
 from django.core.paginator import Paginator
 from .forms import (
@@ -10,7 +11,16 @@ from .forms import (
 # Vistas de productos
 def index_producto(request):
 
+    query = request.GET.get ('search', '')
+
     lista_productos = Productos.objects.all().order_by("nombre")
+
+    if query:
+        lista_productos = lista_productos.filter(
+            Q(nombre__icontains=query) |
+            Q(categoria_id__nombre__icontains=query) |
+            Q(marca__icontains=query)
+        )
 
     paginacion = Paginator(lista_productos, 10)
     numero_pagina = request.GET.get('page')
@@ -67,7 +77,15 @@ def eliminar_producto(request, id):
 # Vistas de categoria 
 def index_categoria(request):
 
-    lista_categoria = Productos.objects.all().order_by("nombre")
+    query = request.GET.get ('search', '')
+
+    lista_categoria = Categorias.objects.all().order_by("nombre")
+
+    if query:
+        lista_categoria = lista_categoria.filter(
+            Q(nombre__icontains=query) |
+            Q(descripcion__icontains=query)
+        )
 
     paginacion = Paginator(lista_categoria, 10)
     numero_pagina = request.GET.get('page')
@@ -113,7 +131,7 @@ def editar_categoria(request, id):
         "form": form
     }
 
-    return render(request, "caetegorias/editar_categoria.html", context)
+    return render(request, "categorias/editar_categoria.html", context)
 
 def eliminar_categoria(request, id):
 
