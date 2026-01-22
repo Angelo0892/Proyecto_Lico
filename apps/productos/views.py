@@ -77,13 +77,49 @@ def index_categoria(request):
         "categorias": categorias,
     }
 
-    return render(request, "categorias/index_categoria.html")
+    return render(request, "categorias/index_categoria.html", context)
 
 def crear_categoria(request):
-    return 0
 
-def editar_categoria(request):
-    return 0
+    if request.method == 'POST':
+        form = formulario_categoria(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("productos:index_categoria")
 
-def eliminar_categoria(request):
-    return 0
+    else:
+        form = formulario_categoria()
+
+    context = {
+        "form": form
+    }
+
+    return render(request, "categorias/crear_categoria.html", context)
+
+def editar_categoria(request, id):
+
+    categoria = get_object_or_404(Categorias, id = id)
+
+    if request.method == 'POST':
+        form = formulario_categoria(request.POST, instance=categoria)
+        if form.is_valid():
+            form.save()
+            return redirect("productos:index_categoria")
+
+    else:
+        form = formulario_categoria(instance=categoria)
+
+    context = {
+        "form": form
+    }
+
+    return render(request, "caetegorias/editar_categoria.html", context)
+
+def eliminar_categoria(request, id):
+
+    categoria = get_object_or_404(Categorias, id = id)
+
+    if request.method == 'POST':
+        categoria.delete()
+
+    return redirect("productos:index_categoria")

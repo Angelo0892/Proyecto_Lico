@@ -13,7 +13,7 @@ urlpatterns = [
     path('producto/eliminar/<int:id>', views.eliminar_producto, name='eliminar_producto'),
 
     # Clasificacion de Categorias
-    path('index_categoria', views.index_categoria, name='index_categoria'),
+    path('index_categoria/', views.index_categoria, name='index_categoria'),
     path('categoria/crear/', views.crear_categoria, name='crear_categoria'),
     path('categoria/editar/<int:id>', views.editar_categoria, name='editar_categoria'),
     path('categoria/eliminar/<int:id>', views.eliminar_categoria, name='eliminar_categoria')

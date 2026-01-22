@@ -2,5 +2,52 @@
 
 {% block content %}
 
+<div class="p-5 text-center">
+
+    <h1>Categorias</h1>
+
+    <a href="{% url 'productos:crear_categoria' %}">Agregar Categoria</a>
+
+    <h2>Categorias</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Categoria</th>
+                <th>Descripcion</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for categoria in categorias %}
+
+            <tr>
+                <td>{{ categoria.nombre }}</td>
+            </tr>
+            <tr>
+                <td>{{ categoria.descripcion }}</td>
+            </tr>
+
+            <tr>
+                <td><a href="{% url 'productos:editar_categoria' categoria.id %}"></a></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <form action="{% url 'productos:eliminar_categoria' categoria.id %}" method="POST"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+
+            {% empty %}
+            <tr><td colspan="2">No exiten categorias</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
 
 {% endblock %}
