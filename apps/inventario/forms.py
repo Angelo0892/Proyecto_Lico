@@ -33,5 +33,14 @@ class formulario_proveedor():
         }
 
         widgets ={
-            
+            "nit": forms.TextInput(attrs={"class": "input"}),
+            "nombre": forms.TextInput(attrs={"class": "input"}),
+            "tipo_proveedor": forms.TextInput(attrs={"Class": "input"}),
+            "apellido1": forms.TextInput(attrs={"Class": "input"}),
+            "apellido2": forms.TextInput(attrs={"Class": "input"}),
+            "pais": forms.TextInput(attrs={"Class": "input"}),
+            "contacto": forms.TextInput(attrs={"Class": "input"}),
+            "telefono": forms.TextInput(attrs={"Class": "input"}),
+            "correo": forms.EmailInput(attrs={"Class": "input"}),
+            "fecha_registro": forms.TextInput(attrs={"Class": "input"}),
         }

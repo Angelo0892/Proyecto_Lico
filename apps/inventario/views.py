@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from 
+from .forms import formulario_proveedor
 from .models import Proveedores
 
 # Create your views here.
@@ -39,6 +39,7 @@ def index_proveedor(request):
 
 def crear_proveedor(request):
 
+    
     #if request.method == 'POST':
         #form
     
