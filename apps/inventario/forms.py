@@ -1,7 +1,7 @@
 from django import forms
 from .models import Proveedores
 
-class formulario_proveedor():
+class formulario_proveedor(forms.ModelForm):
     class Meta:
 
         model = Proveedores
@@ -16,7 +16,6 @@ class formulario_proveedor():
             "contacto",
             "telefono",
             "correo",
-            "fecha_registro"
         ]
 
         labels = {
@@ -29,18 +28,16 @@ class formulario_proveedor():
             "contacto": "Nombre de personal",
             "telefono": "Telefono o Celular",
             "correo": "Correo electronico",
-            "fecha_registro": "Fecha de registro"
         }
 
         widgets ={
             "nit": forms.TextInput(attrs={"class": "input"}),
             "nombre": forms.TextInput(attrs={"class": "input"}),
-            "tipo_proveedor": forms.TextInput(attrs={"Class": "input"}),
-            "apellido1": forms.TextInput(attrs={"Class": "input"}),
-            "apellido2": forms.TextInput(attrs={"Class": "input"}),
-            "pais": forms.TextInput(attrs={"Class": "input"}),
-            "contacto": forms.TextInput(attrs={"Class": "input"}),
-            "telefono": forms.TextInput(attrs={"Class": "input"}),
-            "correo": forms.EmailInput(attrs={"Class": "input"}),
-            "fecha_registro": forms.TextInput(attrs={"Class": "input"}),
+            "tipo_proveedor": forms.TextInput(attrs={"class": "input"}),
+            "apellido1": forms.TextInput(attrs={"class": "input"}),
+            "apellido2": forms.TextInput(attrs={"class": "input"}),
+            "pais": forms.TextInput(attrs={"class": "input"}),
+            "contacto": forms.TextInput(attrs={"class": "input"}),
+            "telefono": forms.TextInput(attrs={"class": "input"}),
+            "correo": forms.EmailInput(attrs={"class": "input"}),
         }

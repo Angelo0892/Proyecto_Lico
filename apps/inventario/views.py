@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import formulario_proveedor
 from .models import Proveedores
 
@@ -18,8 +18,8 @@ def index_proveedor(request):
     if query:
         lista_proveedores = lista_proveedores.filter(
             Q(nombre__icontains=query) |
-            Q(apellido_1__icontains=query) |
-            Q(apellido_2__icontains=query) |
+            Q(apellido1__icontains=query) |
+            Q(apellido2__icontains=query) |
             Q(tipo_proveedor__icontains=query) |
             Q(contacto__icontains=query) |
             Q(telefono__icontains=query) |
@@ -39,18 +39,46 @@ def index_proveedor(request):
 
 def crear_proveedor(request):
 
-    
-    #if request.method == 'POST':
-        #form
-    
+    if request.method == 'POST':
+        form = formulario_proveedor(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect ("inventario:index_proveedor")
+    else:
+        form = formulario_proveedor()
 
-    return 0
+    context = {
+        "form": form
+    }
 
-def editar_proveedor(request):
-    return 0
+    return render(request, "proveedores/crear_proveedor.html", context)
 
-def eliminar_proveedor(request):
-    return 0
+def editar_proveedor(request, id):
+     
+    proveedor = get_object_or_404(Proveedores, id = id)
+
+    if request.method == 'POST':
+        form = formulario_proveedor(request.POST, instance=proveedor)
+        if form.is_valid():
+            form.save()
+            return redirect ("inventario:index_proveedor")
+    else:
+        form = formulario_proveedor(instance=proveedor)
+
+    context = {
+        "form": form
+    }
+
+    return render(request, "proveedores/editar_proveedor.html", context)
+
+def eliminar_proveedor(request, id):
+
+    proveedor = get_object_or_404(Proveedores, id = id)
+
+    if request.method == "POST":
+        proveedor.delete()
+
+    return redirect("inventario:index_proveedor")
 
 """
 
