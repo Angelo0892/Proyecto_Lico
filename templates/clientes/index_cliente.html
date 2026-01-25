@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="p-5 text-center">
+
+    <h1>Clientes</h1>
+
+    <a href="{% url 'clientes:crear_cliente' %}">Agregar Cliente</a>
+
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Buscar cliente..."
+                value="{{ query }}"
+            >
+            <button class="btn btn-primary" type="submit">
+                Buscar
+            </button>
+        </div>
+    </form>
+
+    <h2>Clientes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>CI</th>
+                <th>NIT</th>
+                <th>Nombre</th>
+                <th>Apellido Paterno</th>
+                <th>Apellido Materno</th>
+                <th>Tipo de cliente</th>
+                <th>Direccion</th>
+                <th>Telefono</th>
+                <th>Correo electronico</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.ci }}</td>
+                <td>{{ cliente.nit }}</td>
+                <td>{{ cliente.nombre }}</td>
+                <td>{{ cliente.apellido1 }}</td>
+                <td>{{ cliente.apellido2}}</td>
+                <td>{{ cliente.tipo_cliente }}</td>
+                <td>{{ cliente.direccion }}</td>
+                <td>{{ cliente.telefono }}</td>
+                <td>{{ cliente.email }}</td>
+                <td>
+                    <a href="{% url 'clientes:editar_cliente' cliente.id %}">Actualizar</a>
+                    
+                    <form method="post" action="{% url 'clientes:eliminar_cliente' cliente.id %}"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    </form>
+
+                    <a href="#">Historial de cliente</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8">No hay clientes</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- PAGINACIÓN -->
+    <nav>
+        <ul class="pagination">
+
+            {% if clientes.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ clientes.previous_page_number }}">Anterior</a>
+                </li>
+            {% endif %}
+
+            {% for num in clientes.paginator.page_range %}
+                {% if clientes.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if clientes.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ clientes.next_page_number }}">Siguiente</a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+</div>
+{% endblock %}

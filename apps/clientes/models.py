@@ -1,9 +1,17 @@
 from django.db import models
 
 class Clientes(models.Model):
+
+    TIPO_CLIENTE_CHOICES = [
+        ('minorista', 'Minorista'),
+        ('mayorista', 'Mayorista'),
+        ('restaurante', 'Restaurante'),
+        ('bar', 'Bar'),
+    ]
+
     ci = models.CharField(max_length=20, null=True)
     nit = models.CharField(max_length=20, null=True)
-    tipo_cliente = models.CharField(max_length=20)
+    tipo_cliente = models.CharField(max_length=20, choices=TIPO_CLIENTE_CHOICES)
     nombre = models.CharField(max_length=50)
     apellido1 = models.CharField(max_length=50, null=True)
     apellido2 = models.CharField(max_length=50, null=True)
