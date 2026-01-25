@@ -15,10 +15,22 @@ class Ventas(models.Model):
         return str(self.fecha)
 
 class Facturas(models.Model):
+
     venta_id = models.ForeignKey(Ventas, on_delete=models.CASCADE)
-    numero_factura = models.CharField(max_length=20)
-    fecha_emision = models.DateField()
+    numero_factura = models.CharField(
+        max_length=20,
+        unique=True,
+        editable=False
+    )
+    fecha_emision = models.DateField(auto_now_add=True)
     estado = models.BooleanField()
+
+    def save(self, *args, **kwargs):
+        if not self.numero_factura:
+            ultimo = Facturas.objects.order_by('-id').first()
+            siguiente_numero = 1 if not ultimo else ultimo.id + 1
+            self.numero_factura = str(siguiente_numero).zfill(20)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.numero_factura
