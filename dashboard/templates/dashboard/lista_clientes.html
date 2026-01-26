@@ -1,0 +1,122 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<style>
+    /* AJUSTE DE MARGEN (Para que la barra no tape nada) */
+    .main-content {
+        margin-left: 250px;
+        padding: 30px;
+        background-color: #f0f2f5;
+        min-height: 100vh;
+    }
+
+    /* ESTILOS TUYOS (Restaurados) */
+    .chart-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+    }
+
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between; /* Para poner el botón a la derecha */
+        align-items: center;
+    }
+
+    /* Tabla limpia */
+    .table-custom thead th {
+        background-color: #f8f9fc;
+        border-bottom: 2px solid #e3e6f0;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .table-custom td { vertical-align: middle; }
+
+    /* Badges */
+    .badge-tipo { background-color: #e3f2fd; color: #0d6efd; padding: 5px 10px; border-radius: 10px; font-weight: 600; font-size: 0.8rem; }
+    .badge-activo { background-color: #d1e7dd; color: #0f5132; padding: 4px 8px; border-radius: 5px; font-size: 0.75rem; }
+    .badge-inactivo { background-color: #f8d7da; color: #842029; padding: 4px 8px; border-radius: 5px; font-size: 0.75rem; }
+
+    @media (max-width: 768px) { .main-content { margin-left: 0; padding-top: 70px; } }
+</style>
+
+<div class="main-content">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Gestión de Clientes</h2>
+            <p class="text-muted">Administra tu cartera de clientes</p>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-title">
+            <span><i class="bi bi-people text-primary"></i> Listado General</span>
+            <a href="{% url 'dashboard:crear_cliente' %}" class="btn btn-primary btn-sm shadow-sm">
+                <i class="bi bi-person-plus"></i> Nuevo Cliente
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-custom table-hover">
+                <thead>
+                    <tr>
+                        <th>Cliente / Razón Social</th>
+                        <th>Documento (CI/NIT)</th>
+                        <th>Tipo</th>
+                        <th>Contacto</th>
+                        <th class="text-end">Crédito</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in datos %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ c.nombre }} {{ c.apellido1 }}</div>
+                            <small class="text-muted">{{ c.email|default:"Sin email" }}</small>
+                        </td>
+                        <td>
+                            <span class="fw-bold">{{ c.ci|default:c.nit }}</span>
+                        </td>
+                        <td>
+                            <span class="badge-tipo">{{ c.tipo_cliente }}</span>
+                        </td>
+                        <td>{{ c.telefono }}</td>
+                        <td class="text-end fw-bold text-secondary">${{ c.limite_credito|floatformat:2 }}</td>
+                        <td class="text-center">
+                            {% if c.activo %}
+                                <span class="badge-activo">Activo</span>
+                            {% else %}
+                                <span class="badge-inactivo">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-light text-primary border" title="Editar"><i class="bi bi-pencil"></i></button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-person-x fs-1 d-block mb-3"></i>
+                            No hay clientes registrados todavía.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

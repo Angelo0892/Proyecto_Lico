@@ -1,0 +1,108 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<style>
+    .main-content { margin-left: 250px; padding: 30px; background-color: #f0f2f5; min-height: 100vh; }
+    .chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 100%; }
+    .table-custom thead th { background-color: #f8f9fc; color: #666; font-weight: 600; border-bottom: 2px solid #e3e6f0; }
+    .badge-rol { background-color: #4e73df; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; }
+    @media (max-width: 768px) { .main-content { margin-left: 0; padding-top: 70px; } }
+</style>
+
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Gestión de Accesos</h2>
+            <p class="text-muted">Administración de personal y permisos</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="chart-card">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <h5 class="m-0 fw-bold text-dark"><i class="bi bi-person-badge text-primary"></i> Usuarios del Sistema</h5>
+                    <a href="{% url 'dashboard:crear_usuario' %}" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="bi bi-plus-lg"></i> Nuevo Usuario
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nombre Completo</th>
+                                <th>Email</th>
+                                <th>Rol Asignado</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in datos %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ u.nombre }} {{ u.apellido }}</div>
+                                </td>
+                                <td class="text-muted small">{{ u.email }}</td>
+                                <td>
+                                    {% if u.rol %}
+                                        <span class="badge-rol">{{ u.rol.nombre }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Sin Rol</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if u.activo %}
+                                        <i class="bi bi-check-circle-fill text-success fs-5" title="Activo"></i>
+                                    {% else %}
+                                        <i class="bi bi-x-circle-fill text-danger fs-5" title="Inactivo"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-pencil"></i></button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted py-4">No hay usuarios creados.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="chart-card">
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <h5 class="m-0 fw-bold text-dark"><i class="bi bi-shield-lock text-warning"></i> Roles</h5>
+                    <a href="{% url 'dashboard:crear_rol' %}" class="btn btn-warning btn-sm text-dark shadow-sm">
+                        <i class="bi bi-plus-lg"></i> Rol
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in roles %}
+                            <tr>
+                                <td class="fw-bold">{{ r.nombre }}</td>
+                                <td class="small text-muted">{{ r.descripcion|truncatechars:20 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted">Sin roles.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
