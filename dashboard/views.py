@@ -277,6 +277,7 @@ def crear_importacion(request):
         form = ImportacionForm()
     return render(request, 'dashboard/form_importacion.html', {'form': form})
 
+# --- Vista de proveedores ---
 @login_required
 def crear_proveedor(request):
     if request.method == 'POST':
@@ -288,6 +289,36 @@ def crear_proveedor(request):
         form = ProveedorForm()
     return render(request, 'dashboard/form_proveedor.html', {'form': form})
 
+@login_required
+def editar_proveedor(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk=pk)
+    
+    if request.method == 'POST':
+        # instance=producto es la clave: carga los datos existentes
+        form = ProveedorForm(request.POST, instance=proveedor)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard:proveedores')
+    else:
+        form = ProveedorForm(instance=proveedor)
+    
+    # Reutilizamos el mismo formulario de crear
+    return render(request, 'dashboard/form_proveedor.html', {
+        'form': form, 
+        'titulo': f'Editar Producto: {proveedor.nombre}'
+    })
+
+@login_required
+def eliminar_proveedor(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk = pk)
+
+    if request.method == 'POST':
+        proveedor.delete()
+
+    return redirect('dashboard:proveedores')
+
+
+# --- Vistas de usuarios ---
 @login_required
 def crear_usuario(request):
     if request.method == 'POST':

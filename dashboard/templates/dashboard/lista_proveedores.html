@@ -55,9 +55,19 @@
                             <small class="text-muted" style="font-size: 0.75rem;">{{ p.direccion|truncatechars:30 }}</small>
                         </td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-outline-secondary border-0" title="Editar">
+                            <a href="{% url 'dashboard:editar_proveedor' p.id %}" class="btn btn-sm btn-outline-secondary border-0" title="Editar">
                                 <i class="bi bi-pencil-square fs-5"></i>
-                            </button>
+                            </a>
+
+                            <form action="{% url 'dashboard:eliminar_proveedor' p.id %}" method="POST" 
+                                onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                                
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-light text-danger border"
+                                    title="Eliminar">
+                                     <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% empty %}

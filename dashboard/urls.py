@@ -33,7 +33,9 @@ urlpatterns = [
     path('editar/venta/<int:pk>/', views.editar_venta, name='editar_venta'),
     path('editar/categoria/<int:pk>', views.editar_categoria, name = 'editar_categoria'),
     path('editar/producto/<int:pk>/', views.editar_producto, name='editar_producto'),
+    path('editar/proveedor/<int:pk>', views.editar_proveedor, name='editar_proveedor'),
 
     # --- Direcciones de eliminacion ---
-    path('eliminar/categoria/<int:pk>', views.eliminar_categoria, name='eliminar_categoria')
+    path('eliminar/categoria/<int:pk>', views.eliminar_categoria, name='eliminar_categoria'),
+    path('eliminar/proveedor/<int:pk>', views.eliminar_proveedor, name='eliminar_proveedor'),
 ]
