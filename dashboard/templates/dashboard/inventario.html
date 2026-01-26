@@ -1,0 +1,146 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<style>
+    /* AJUSTE DE MARGEN OBLIGATORIO */
+    .main-content {
+        margin-left: 250px;
+        padding: 30px;
+        background-color: #f0f2f5;
+        min-height: 100vh;
+    }
+
+    /* Estilos de Tarjetas (Tu diseño) */
+    .chart-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-left: 5px solid #36b9cc; /* Color Info */
+        height: 100%;
+    }
+
+    /* Badges de Stock */
+    .badge-stock-ok { background-color: #d1e7dd; color: #0f5132; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem;}
+    .badge-stock-warning { background-color: #fff3cd; color: #664d03; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem;}
+    .badge-stock-danger { background-color: #f8d7da; color: #842029; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem;}
+
+    /* Tabla */
+    .table-custom thead th { background-color: #f8f9fc; color: #666; font-weight: 600; border-bottom: 2px solid #e3e6f0; }
+    .table-custom td { vertical-align: middle; }
+
+    @media (max-width: 768px) { .main-content { margin-left: 0; padding-top: 70px; } }
+</style>
+
+<div class="main-content">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark">Inventario General</h2>
+            <p class="text-muted">Gestión de productos y existencias</p>
+        </div>
+        <div>
+            <a href="{% url 'dashboard:crear_producto' %}" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo Producto
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs fw-bold text-info text-uppercase mb-1">Valor del Inventario (Costo)</div>
+                        <div class="h3 mb-0 fw-bold text-gray-800">${{ valor_inventario|floatformat:2 }}</div>
+                    </div>
+                    <i class="bi bi-cash-stack fs-1 text-gray-300" style="color: #ddd;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="kpi-card" style="border-left-color: #4e73df;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total de Productos</div>
+                        <div class="h3 mb-0 fw-bold text-gray-800">{{ productos.count }}</div>
+                    </div>
+                    <i class="bi bi-box-seam fs-1 text-gray-300" style="color: #ddd;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="kpi-card" style="border-left-color: #1cc88a;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs fw-bold text-success text-uppercase mb-1">Categorías Activas</div>
+                        <div class="h3 mb-0 fw-bold text-gray-800">{{ por_categoria.count }}</div>
+                    </div>
+                    <i class="bi bi-tags fs-1 text-gray-300" style="color: #ddd;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="table-responsive">
+            <table class="table table-custom table-hover">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Proveedor</th>
+                        <th>Precio Venta</th>
+                        <th class="text-center">Stock</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in productos %}
+                    <tr>
+                        <td class="fw-bold text-secondary">{{ p.codigo }}</td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ p.nombre }}</div>
+                            <small class="text-muted">{{ p.marca }} • {{ p.tipo }}</small>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ p.categoria.nombre|default:"Sin Categ." }}</span></td>
+                        <td>{{ p.proveedor.nombre }}</td>
+                        <td class="fw-bold text-success">${{ p.precio_venta|floatformat:2 }}</td>
+                        <td class="text-center">
+                            {% if p.stock_actual == 0 %}
+                                <span class="badge-stock-danger">Agotado (0)</span>
+                            {% elif p.stock_actual <= p.stock_minimo %}
+                                <span class="badge-stock-warning">Bajo ({{ p.stock_actual }})</span>
+                            {% else %}
+                                <span class="badge-stock-ok">OK ({{ p.stock_actual }})</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'dashboard:editar_producto' p.id %}" class="btn btn-sm btn-outline-primary border-0" title="Editar">
+                                <i class="bi bi-pencil-square fs-5"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            No tienes productos registrados. ¡Agrega el primero!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

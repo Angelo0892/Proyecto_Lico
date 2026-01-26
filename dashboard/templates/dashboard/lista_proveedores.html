@@ -1,0 +1,76 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<style>
+    .main-content { margin-left: 250px; padding: 30px; background-color: #f0f2f5; min-height: 100vh; }
+    .chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .table-custom thead th { background-color: #f8f9fc; color: #666; font-weight: 600; border-bottom: 2px solid #e3e6f0; }
+    .table-custom td { vertical-align: middle; }
+    @media (max-width: 768px) { .main-content { margin-left: 0; padding-top: 70px; } }
+</style>
+
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Directorio de Proveedores</h2>
+            <p class="text-muted">Gestión de suministros y contactos</p>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+            <span class="fs-5 fw-bold text-dark"><i class="bi bi-building text-warning"></i> Listado General</span>
+            <a href="{% url 'dashboard:crear_proveedor' %}" class="btn btn-warning text-dark btn-sm shadow-sm fw-bold">
+                <i class="bi bi-plus-lg"></i> Nuevo Proveedor
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-custom table-hover">
+                <thead>
+                    <tr>
+                        <th>Proveedor / Empresa</th>
+                        <th>Tipo</th>
+                        <th>Contacto</th>
+                        <th>Ubicación</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in datos %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ p.nombre }}</div>
+                            <small class="text-muted"><i class="bi bi-envelope"></i> {{ p.email|default:"--" }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ p.tipo_proveedor|default:"General" }}</span>
+                        </td>
+                        <td>
+                            <div class="small fw-bold">{{ p.contacto }}</div>
+                            <small class="text-muted">{{ p.telefono }}</small>
+                        </td>
+                        <td>
+                            <div>{{ p.pais|default:"N/A" }}</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">{{ p.direccion|truncatechars:30 }}</small>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-secondary border-0" title="Editar">
+                                <i class="bi bi-pencil-square fs-5"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-box-seam fs-1 d-block mb-3"></i>
+                            No hay proveedores registrados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

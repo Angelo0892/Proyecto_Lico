@@ -1,0 +1,53 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<style>
+    .contenido-ajustado { margin-left: 250px; padding: 40px; width: calc(100% - 250px); }
+    @media (max-width: 768px) { .contenido-ajustado { margin-left: 0; width: 100%; padding-top: 60px; } }
+    .form-card { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+</style>
+
+<div class="contenido-ajustado">
+    <div class="form-card">
+        <div class="card-header bg-warning text-dark p-3 rounded-top d-flex align-items-center">
+            <i class="bi bi-truck fs-4 me-2"></i>
+            <h4 class="m-0">Planificar Importación</h4>
+        </div>
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Proveedor</label>
+                    {{ form.proveedor }}
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Fecha Pedido</label>
+                        {{ form.fecha_pedido }}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Llegada Estimada</label>
+                        {{ form.fecha_llegada }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Estado Inicial</label>
+                    {{ form.estado }}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Observaciones</label>
+                    {{ form.observacion }}
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-warning text-dark fw-bold">Crear Orden de Compra</button>
+                    <a href="{% url 'dashboard:importaciones' %}" class="btn btn-light text-muted">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,119 @@
-{% extends 'dashboard/base.html' %}
-{% load static %}
+{% extends "dashboard/base.html" %}
 
 {% block content %}
-<div class="p-5 text-center">
-    <h1>🚧 Sección en Construcción 🚧</h1>
-    <p>Pronto verás aquí el contenido funcional.</p>
-    <a href="{% url 'dashboard:principal' %}" class="btn btn-primary">Volver al Inicio</a>
+
+<style>
+    .contenido-ajustado {
+        margin-left: 250px;
+        padding: 20px;
+        width: calc(100% - 250px);
+    }
+
+    @media (max-width: 768px) {
+        .contenido-ajustado {
+            margin-left: 0;
+            width: 100%;
+            padding-top: 60px;
+        }
+    }
+</style>
+
+<div class="contenido-ajustado">
+    <div class="container-fluid pt-3">
+        
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+            <h1 class="h2">Control de Importaciones</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <button class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-download"></i> Exportar Reporte
+                </button>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            {% for estado in por_estado %}
+            <div class="col-md-3">
+                <div class="card shadow-sm border-start-lg border-start-primary h-100">
+                    <div class="card-body">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            {{ estado.estado }}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ estado.cantidad }} Lotes</div>
+                        <small class="text-muted">Valor: ${{ estado.total|floatformat:0 }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 bg-white d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Historial de Lotes</h6>
+                <a href="{% url 'dashboard:crear_importacion' %}" class="btn btn-sm btn-primary">
+    <i class="bi bi-plus-circle"></i> Nueva Importación
+</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Lote ID</th>
+                                <th>Proveedor</th>
+                                <th>Fecha Pedido</th>
+                                <th>Fecha Llegada (Est.)</th>
+                                <th>Estado</th>
+                                <th class="text-end">Costo Total</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for imp in importaciones %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-dark">{{ imp.numero_lote }}</span>
+                                </td>
+                                <td>{{ imp.proveedor.nombre }}</td>
+                                <td>{{ imp.fecha_pedido|date:"d M Y" }}</td>
+                                <td>
+                                    {% if imp.fecha_llegada %}
+                                        {{ imp.fecha_llegada|date:"d M Y" }}
+                                    {% else %}
+                                        <span class="text-muted">Pendiente</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if imp.estado == 'PLANIFICADO' %}
+                                        <span class="badge bg-secondary">Planificado</span>
+                                    {% elif imp.estado == 'EN_TRANSITO' %}
+                                        <span class="badge bg-primary">En Tránsito</span>
+                                    {% elif imp.estado == 'ADUANA' %}
+                                        <span class="badge bg-warning text-dark">En Aduana</span>
+                                    {% elif imp.estado == 'RECIBIDO' %}
+                                        <span class="badge bg-success">Recibido</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">${{ imp.costo_total|floatformat:2 }}</td>
+                                <td class="text-center">
+                                    <a href="/admin/dashboard/importacion/{{ imp.id }}/change/" class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                                    No hay importaciones registradas
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 {% endblock %}

@@ -1,10 +1,151 @@
 {% extends "dashboard/base.html" %}
 
-{% load static %}
 {% block content %}
-<div class="p-5 text-center">
-    <h1>🚧 Sección en Construcción 🚧</h1>
-    <p>Pronto verás aquí el contenido funcional.</p>
-    <a href="{% url 'dashboard:principal' %}" class="btn btn-primary">Volver al Inicio</a>
+
+<style>
+    .contenido-ajustado {
+        margin-left: 250px; /* Empujamos 250px a la derecha */
+        padding: 20px;
+        width: calc(100% - 250px); /* Ajustamos el ancho para que no se salga */
+    }
+
+    /* Ajuste para celulares (por si acaso) */
+    @media (max-width: 768px) {
+        .contenido-ajustado {
+            margin-left: 0;
+            width: 100%;
+            padding-top: 60px;
+        }
+    }
+</style>
+
+<div class="contenido-ajustado">
+    <div class="container-fluid pt-3">
+        
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+    <h1 class="h2">Gestión de Ventas</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <form method="get" class="d-flex gap-2 align-items-center">
+            <input type="date" name="fecha_inicio" class="form-control form-control-sm" value="{{ fecha_inicio|date:'Y-m-d' }}">
+            <input type="date" name="fecha_fin" class="form-control form-control-sm" value="{{ fecha_fin|date:'Y-m-d' }}">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-filter"></i> Filtrar
+            </button>
+            
+            <a href="{% url 'dashboard:crear_venta' %}" class="btn btn-sm btn-primary ms-2 shadow-sm">
+                <i class="bi bi-cart-plus"></i> Nueva Venta
+            </a>
+        </form>
+    </div>
+</div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card border-primary mb-3 text-center shadow-sm">
+                    <div class="card-header bg-primary text-white">Total Vendido (Periodo)</div>
+                    <div class="card-body">
+                        <h3 class="card-title text-primary">${{ total_periodo|floatformat:2 }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-success mb-3 text-center shadow-sm">
+                    <div class="card-header bg-success text-white">Cantidad de Ventas</div>
+                    <div class="card-body">
+                        <h3 class="card-title text-success">{{ cantidad_ventas }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-info mb-3 text-center shadow-sm">
+                    <div class="card-header bg-info text-white">Ticket Promedio</div>
+                    <div class="card-body">
+                        <h3 class="card-title text-info">
+                            {% widthratio total_periodo cantidad_ventas 1 %} $
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Listado de Ventas</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th># Factura</th>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Vendedor</th>
+                                        <th>Estado</th>
+                                        <th class="text-end">Total</th>
+                                        <th class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for venta in ventas %}
+                                    <tr>
+                                        <td><strong>#{{ venta.id }}</strong></td>
+                                        <td>{{ venta.fecha|date:"d/m/Y H:i" }}</td>
+                                        <td>{{ venta.cliente.nombre }} {{ venta.cliente.apellido1 }}</td>
+                                        <td>{{ venta.usuario.nombre|default:"Sistema" }}</td>
+                                        <td>
+                                            {% if venta.estado == 'PAGADO' %}
+                                                <span class="badge bg-success">Pagado</span>
+                                            {% elif venta.estado == 'PENDIENTE' %}
+                                                <span class="badge bg-warning text-dark">Pendiente</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ venta.estado }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end fw-bold">${{ venta.total|floatformat:2 }}</td>
+                                        
+                                        <td class="text-center">
+                                            <a href="{% url 'dashboard:editar_venta' venta.id %}" class="btn btn-sm btn-outline-primary border-0" title="Editar Venta">
+                                                <i class="bi bi-pencil-square fs-5"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            No se encontraron ventas en este rango de fechas.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">Mejores Clientes</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for c in ventas_cliente %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ c.cliente__nombre }} {{ c.cliente__apellido1 }}
+                                <span class="badge bg-primary rounded-pill">${{ c.total|floatformat:0 }}</span>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item">Sin datos aún.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

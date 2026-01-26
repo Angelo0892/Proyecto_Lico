@@ -1,48 +1,154 @@
-<!-- templates/dashboard/principal.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Importadora de Alcohol</title>
+    <title>Sistema Lico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{% static '/styles/dashboard.css' %}">
+    
+    <style>
+        body { min-height: 100vh; overflow-x: hidden; background-color: #f8f9fa; }
+        
+        /* ESTILOS DE LA BARRA LATERAL */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100vh;
+            background-color: #212529;
+            color: white;
+            padding-top: 20px;
+            z-index: 1000;
+            overflow-y: auto; /* Scroll si hay muchos items */
+        }
+        
+        .sidebar .logo {
+            font-size: 1.4rem;
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+            border-left: 4px solid #0d6efd; /* Borde azul activo */
+        }
+
+        .sidebar .nav-link i { margin-right: 12px; font-size: 1.1rem; }
+        
+        /* Pequeños títulos de sección */
+        .sidebar-heading {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6c757d;
+            padding: 15px 20px 5px;
+            font-weight: bold;
+        }
+        
+        /* CONTENEDOR PRINCIPAL (Para no ocultar contenido) */
+        .main-wrapper {
+            width: 100%;
+            /* No ponemos margen aquí porque lo pusimos en cada archivo individual con .contenido-ajustado */
+            /* Si prefieres arreglarlo globalmente, avísame */
+        }
+    </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    
-    
+
     <nav class="sidebar">
         <div class="logo">
-            <i class="bi bi-cup-straw"></i> Importadora
+            <i class="bi bi-cup-straw text-warning"></i> <strong>FinoTrago Jhon Jr. Walker</strong>
         </div>
+        
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link active" href="{% url 'dashboard:principal' %}">
+                <a href="{% url 'dashboard:principal' %}" class="nav-link {% if request.resolver_match.url_name == 'principal' %}active{% endif %}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
+
+            <div class="sidebar-heading">Operaciones</div>
             
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard:importaciones' %}">
-                    <i class="bi bi-box-seam"></i> Importaciones
+                <a href="{% url 'dashboard:ventas' %}" class="nav-link {% if request.resolver_match.url_name == 'ventas' %}active{% endif %}">
+                    <i class="bi bi-cart3"></i> Ventas
                 </a>
             </li>
             
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'dashboard:ventas' %}">
-                    <i class="bi bi-graph-up"></i> Ventas
+                <a href="{% url 'dashboard:inventario' %}" class="nav-link {% if request.resolver_match.url_name == 'inventario' %}active{% endif %}">
+                    <i class="bi bi-boxes"></i> Inventario
                 </a>
             </li>
             
+            <li class="nav-item">
+                <a href="{% url 'dashboard:importaciones' %}" class="nav-link {% if request.resolver_match.url_name == 'importaciones' %}active{% endif %}">
+                    <i class="bi bi-truck"></i> Importaciones
+                </a>
+            </li>
+
+            <div class="sidebar-heading">Gestión</div>
+
+            <li class="nav-item">
+                <a href="{% url 'dashboard:clientes' %}" class="nav-link {% if request.resolver_match.url_name == 'clientes' %}active{% endif %}">
+                    <i class="bi bi-people"></i> Clientes
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'dashboard:proveedores' %}" class="nav-link {% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
+                    <i class="bi bi-building"></i> Proveedores
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'dashboard:facturacion' %}" class="nav-link {% if request.resolver_match.url_name == 'facturacion' %}active{% endif %}">
+                    <i class="bi bi-receipt"></i> Facturación
+                </a>
+            </li>
+
+            <div class="sidebar-heading">Administración</div>
+
+            <li class="nav-item">
+                <a href="{% url 'dashboard:usuarios' %}" class="nav-link {% if request.resolver_match.url_name == 'usuarios' %}active{% endif %}">
+                    <i class="bi bi-person-badge"></i> Usuarios & Roles
+                </a>
+            </li>
             
+            <li class="nav-item">
+                <a href="/admin/" target="_blank" class="nav-link">
+                    <i class="bi bi-shield-lock"></i> Panel Admin
+                </a>
+            </li>
         </ul>
+        
+        <div class="mt-auto p-3 border-top border-secondary">
+            <small class="text-white-50 d-block mb-1">Usuario:</small>
+            <div class="d-flex align-items-center text-white">
+                <i class="bi bi-person-circle fs-5 me-2"></i>
+                <span>{{ user.username|default:"Admin" }}</span>
+            </div>
+        </div>
     </nav>
 
+    <div class="main-wrapper">
+        {% block content %}
+        {% endblock %}
+    </div>
 
-    {% block content %}
-    {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
