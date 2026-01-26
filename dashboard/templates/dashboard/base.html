@@ -121,9 +121,10 @@
                 </a>
             </li>
 
+
             <li class="nav-item">
-                <a href="{% url 'dashboard:productos' %}" class="nav-link {% if request.resolver_match.url_name == 'facturacion' %}active{% endif %}">
-                    <i class="bi bi-receipt"></i> Productos
+                <a href="{% url 'dashboard:categorias' %}" class="nav-link {% if request.resolver_match.url_name == 'facturacion' %}active{% endif %}">
+                    <i class="bi bi-tags"></i> Categorias de Producto
                 </a>
             </li>
 

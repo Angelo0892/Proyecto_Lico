@@ -1,5 +1,8 @@
 from django import forms
-from .models import Cliente, Producto, Importacion, Proveedor, Usuario, Rol, Venta, DetalleVenta
+from .models import (
+    Cliente, Producto, Importacion, Proveedor, 
+    Usuario, Rol, Venta, DetalleVenta, Categoria
+)
 
 # 1. FORMULARIO DE CLIENTES
 class ClienteForm(forms.ModelForm):
@@ -104,5 +107,15 @@ class DetalleVentaForm(forms.ModelForm):
         widgets = {
             'producto': forms.Select(attrs={'class': 'form-select'}),
             'cantidad': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'value': 1}),
+        }
+    
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nombre', 'descripcion']
+        
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
         }
 

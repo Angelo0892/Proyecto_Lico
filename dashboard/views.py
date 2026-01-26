@@ -14,7 +14,8 @@ from django.core.paginator import Paginator
 from .forms import (
     ClienteForm, ProductoForm, ImportacionForm, 
     ProveedorForm, UsuarioForm, RolForm, 
-    VentaForm, DetalleVentaForm
+    VentaForm, DetalleVentaForm,
+    CategoriaForm
 )
 
 # --- MODELOS ---
@@ -219,6 +220,51 @@ def editar_producto(request, pk):
         'form': form, 
         'titulo': f'Editar Producto: {producto.nombre}'
     })
+
+# --- VISTA DE Categorias ---
+
+@login_required
+def crear_categoria(request):
+    
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard:categorias')
+    else:
+        form = CategoriaForm()
+    return render(request, 'dashboard/form_categoria.html', {'form': form})
+
+@login_required
+def editar_categoria(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    
+    if request.method == 'POST':
+        # instance=producto es la clave: carga los datos existentes
+        form = CategoriaForm(request.POST, instance=categoria)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard:categorias')
+    else:
+        form = CategoriaForm(instance=categoria)
+    
+    # Reutilizamos el mismo formulario de crear
+    return render(request, 'dashboard/form_categoria.html', {
+        'form': form, 
+        'titulo': f'Editar Producto: {categoria.nombre}'
+    })
+
+def eliminar_categoria(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    
+    if request.method == 'POST':
+        categoria.delete()
+    
+    # Reutilizamos el mismo formulario de crear
+    return redirect('dashboard:categorias')
+
+
+# --- VISTA DE Importaciones ---
 
 @login_required
 def crear_importacion(request):
@@ -463,8 +509,7 @@ def lista_categorias(request):
     if search:
         datos = datos.filter(
             Q(nombre__icontains=search) |
-            Q(categoria_id__nombre__icontains=search) |
-            Q(marca__icontains=search)
+            Q(descripcion__icontains=search)
         )
 
     paginacion = Paginator(datos, 10)
@@ -476,4 +521,4 @@ def lista_categorias(request):
         "search": search,
     }
 
-    return render(request, 'dashboard/lista_categoria.html', context)
+    return render(request, 'dashboard/lista_categorias.html', context)

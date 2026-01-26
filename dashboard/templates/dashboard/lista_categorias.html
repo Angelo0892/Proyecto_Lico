@@ -6,18 +6,19 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2>Gestión de Productos</h2>
-            <p class="text-muted">Administra tu inventario de productos</p>
+            <h2>Gestión de Categorías</h2>
+            <p class="text-muted">Administra las categorías de productos</p>
         </div>
     </div>
 
+    <!-- Buscador -->
     <form method="get" class="mb-3">
         <div class="input-group">
             <input
                 type="text"
                 name="search"
                 class="form-control"
-                placeholder="Buscar por categoria ..."
+                placeholder="Buscar por nombre de categoría..."
                 value="{{ search }}"
             >
             <button class="btn btn-primary" type="submit">
@@ -29,10 +30,11 @@
     <div class="chart-card">
         <div class="chart-title">
             <span>
-                <i class="bi bi-box-seam text-primary"></i> Listado de Productos
+                <i class="bi bi-tags text-primary"></i> Listado de Categorías
             </span>
-            <a href="{% url 'dashboard:crear_producto' %}" class="btn btn-primary btn-sm shadow-sm">
-                <i class="bi bi-plus-circle"></i> Nuevo Producto
+            <a href="{% url 'dashboard:crear_categoria' %}"
+               class="btn btn-primary btn-sm shadow-sm">
+                <i class="bi bi-plus-circle"></i> Nueva Categoría
             </a>
         </div>
 
@@ -40,90 +42,62 @@
             <table class="table table-custom table-hover">
                 <thead>
                     <tr>
-                        <th>Producto</th>
-                        <th>Código</th>
-                        <th>Categoría</th>
-                        <th>Marca</th>
-                        <th class="text-end">Precio Venta</th>
-                        <th class="text-center">Stock</th>
-                        <th class="text-center">Estado</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for p in datos %}
+
+                    {% for c in datos %}
                     <tr>
-                        <td>
-                            <div class="fw-bold text-dark">{{ p.nombre }}</div>
-                            <small class="text-muted">
-                                {{ p.descripcion|default:"Sin descripción"|truncatechars:40 }}
-                            </small>
+                        <td class="fw-bold text-dark">
+                            {{ c.nombre }}
                         </td>
 
-                        <td class="fw-bold">{{ p.codigo }}</td>
-
-                        <td>
-                            {{ p.categoria.nombre|default:"—" }}
-                        </td>
-
-                        <td>{{ p.marca|default:"—" }}</td>
-
-                        <td class="text-end fw-bold text-secondary">
-                            Bs {{ p.precio_venta|floatformat:2 }}
+                        <td class="text-muted">
+                            {{ c.descripcion|default:"Sin descripción"|truncatechars:60 }}
                         </td>
 
                         <td class="text-center">
-                            {% if p.stock_actual <= p.stock_minimo %}
-                                <span class="badge bg-danger">
-                                    {{ p.stock_actual }}
-                                </span>
-                            {% else %}
-                                <span class="badge bg-success">
-                                    {{ p.stock_actual }}
-                                </span>
-                            {% endif %}
-                        </td>
-
-                        <td class="text-center">
-                            {% if p.activo %}
-                                <span class="badge-activo">Activo</span>
-                            {% else %}
-                                <span class="badge-inactivo">Inactivo</span>
-                            {% endif %}
-                        </td>
-
-                        <td class="text-center">
-                            <a href="{% url 'dashboard:editar_producto' p.id %}"
+                            <a href="{% url 'dashboard:editar_categoria' c.id %}"
                                class="btn btn-sm btn-light text-primary border"
                                title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
 
-                            <a href="{% url 'productos:eliminar_producto' p.id %}"
-                               class="btn btn-sm btn-light text-danger border"
-                               title="Eliminar">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                            <form action="{% url 'dashboard:eliminar_categoria' c.id %}" method="POST" 
+                                onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                                
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-light text-danger border"
+                                    title="Eliminar">
+                                     <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
 
                     {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center py-5 text-muted">
-                            <i class="bi bi-box fs-1 d-block mb-3"></i>
-                            No hay productos registrados.
+                        <td colspan="3" class="text-center py-5 text-muted">
+                            <i class="bi bi-tags fs-1 d-block mb-3"></i>
+                            No hay categorías registradas.
                         </td>
                     </tr>
                     {% endfor %}
+
                 </tbody>
             </table>
 
+            <!-- Paginación -->
             <nav class="mt-4">
                 <ul class="pagination justify-content-center">
 
                     {% if datos.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ datos.previous_page_number }}&search={{ search }}">
+                            <a class="page-link"
+                               href="?page={{ datos.previous_page_number }}&search={{ search }}">
                                 Anterior
                             </a>
                         </li>
@@ -136,14 +110,18 @@
                             </li>
                         {% elif num > datos.number|add:'-3' and num < datos.number|add:'3' %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ num }}&search={{ search }}">{{ num }}</a>
+                                <a class="page-link"
+                                   href="?page={{ num }}&search={{ search }}">
+                                    {{ num }}
+                                </a>
                             </li>
                         {% endif %}
                     {% endfor %}
 
                     {% if datos.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ datos.next_page_number }}&search={{ search }}">
+                            <a class="page-link"
+                               href="?page={{ datos.next_page_number }}&search={{ search }}">
                                 Siguiente
                             </a>
                         </li>
@@ -151,8 +129,9 @@
 
                 </ul>
             </nav>
-        </div>
 
+        </div>
     </div>
 </div>
+
 {% endblock %}

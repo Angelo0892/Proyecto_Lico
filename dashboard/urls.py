@@ -16,6 +16,8 @@ urlpatterns = [
     path('facturacion/', views.lista_facturas, name='facturacion'),    # Tablas Facturas/Pagos
     path('usuarios/', views.lista_usuarios, name='usuarios'),          # Tablas Usuarios/Roles
     path('productos/', views.lista_productos, name='productos'),
+    path('categorias/', views.lista_categorias, name='categorias'),
+
     path('crear/usuario/', views.crear_usuario, name='crear_usuario'),
     path('crear/rol/', views.crear_rol, name='crear_rol'),
     
@@ -25,7 +27,13 @@ urlpatterns = [
     path('crear/importacion/', views.crear_importacion, name='crear_importacion'),
     path('crear/proveedor/', views.crear_proveedor, name='crear_proveedor'),
     path('crear/venta/', views.crear_venta, name='crear_venta'),
+    path('crear/categoria/', views.crear_categoria, name = 'crear_categoria'),
     
+    # --- Formularios de Edicion ---
     path('editar/venta/<int:pk>/', views.editar_venta, name='editar_venta'),
+    path('editar/categoria/<int:pk>', views.editar_categoria, name = 'editar_categoria'),
     path('editar/producto/<int:pk>/', views.editar_producto, name='editar_producto'),
+
+    # --- Direcciones de eliminacion ---
+    path('eliminar/categoria/<int:pk>', views.eliminar_categoria, name='eliminar_categoria')
 ]
