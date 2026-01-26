@@ -175,7 +175,7 @@ def dashboard_importaciones(request):
     }
     return render(request, 'dashboard/importaciones.html', context)
 
-# --- VISTAS DE CREACIÓN ---
+# --- VISTAS DE Clientes ---
 
 @login_required
 def crear_cliente(request):
@@ -187,6 +187,29 @@ def crear_cliente(request):
     else:
         form = ClienteForm()
     return render(request, 'dashboard/form_cliente.html', {'form': form})
+
+@login_required
+def editar_cliente(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard:clientes')
+    else:
+        form = ClienteForm(instance=cliente)
+    
+    # Reutilizamos el mismo formulario de crear
+    return render(request, 'dashboard/form_cliente.html', {'form': form})
+
+def eliminar_cliente(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+
+    if request.method == 'POST':
+        cliente.delete()
+
+    return redirect ('dashboard:clientes')
 
 # --- VISTA DE PRODUCTOS ---
 
@@ -251,9 +274,10 @@ def editar_categoria(request, pk):
     # Reutilizamos el mismo formulario de crear
     return render(request, 'dashboard/form_categoria.html', {
         'form': form, 
-        'titulo': f'Editar Producto: {categoria.nombre}'
+        'titulo': f'Editar Categoria: {categoria.nombre}'
     })
 
+@login_required
 def eliminar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     
@@ -463,13 +487,60 @@ def editar_venta(request, pk):
 
 @login_required
 def lista_clientes(request):
-    clientes = Cliente.objects.all()
-    return render(request, 'dashboard/lista_clientes.html', {'datos': clientes})
+    search = request.GET.get ('search', '')
+
+    datos = Cliente.objects.all().order_by("nombre")
+
+    if search:
+        datos = datos.filter(
+            Q(ci__icontains=search) |
+            Q(nit__icontains=search) |
+            Q(tipo_cliente__icontains=search) |
+            Q(nombre__icontains=search) |
+            Q(apellido1__icontains=search) |
+            Q(apellido2__icontains=search) |
+            Q(direccion__icontains=search) |
+            Q(telefono__icontains=search) |
+            Q(email__icontains=search)
+        )
+
+    paginacion = Paginator(datos, 10)
+    numero_pagina = request.GET.get('page')
+    datos = paginacion.get_page(numero_pagina)
+
+    context = {
+        "datos": datos,
+        "search": search,
+    }
+    return render(request, 'dashboard/lista_clientes.html', context)
 
 @login_required
 def lista_proveedores(request):
-    proveedores = Proveedor.objects.all().order_by('-id')
-    return render(request, 'dashboard/lista_proveedores.html', {'datos': proveedores})
+    search = request.GET.get('search', '')
+
+    datos = Proveedor.objects.all().order_by("nombre")
+
+    if search:
+        datos = datos.filter(
+            Q(nombre__icontains=search) |
+            Q(tipo_proveedor__icontains=search) |
+            Q(contacto__icontains=search) |
+            Q(telefono__icontains=search) |
+            Q(email__icontains=search) |
+            Q(direccion__icontains=search) |
+            Q(pais__icontains=search)
+        )
+
+    paginacion = Paginator(datos, 10)
+    numero_pagina = request.GET.get('page')
+    datos = paginacion.get_page(numero_pagina)
+
+    context = {
+        'datos': datos,
+        'search': search
+    }
+
+    return render(request, 'dashboard/lista_proveedores.html', context)
 
 @login_required
 def lista_facturas(request):

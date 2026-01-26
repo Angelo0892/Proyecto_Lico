@@ -68,6 +68,22 @@
         </div>
 
         <div class="table-responsive">
+
+            <form method="get" class="mb-3">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        placeholder="Buscar por nombre de cliente..."
+                        value="{{ search }}"
+                    >
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
             <table class="table table-custom table-hover">
                 <thead>
                     <tr>
@@ -84,7 +100,7 @@
                     {% for c in datos %}
                     <tr>
                         <td>
-                            <div class="fw-bold text-dark">{{ c.nombre }} {{ c.apellido1 }}</div>
+                            <div class="fw-bold text-dark">{{ c.nombre }}</div>
                             <small class="text-muted">{{ c.email|default:"Sin email" }}</small>
                         </td>
                         <td>
@@ -103,7 +119,19 @@
                             {% endif %}
                         </td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-light text-primary border" title="Editar"><i class="bi bi-pencil"></i></button>
+                            <a href="{% url 'dashboard:editar_cliente' c.id %}" class="btn btn-sm btn-light text-primary border" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <form action="{% url 'dashboard:eliminar_cliente' c.id %}" method="POST" 
+                                onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                                
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-light text-danger border"
+                                    title="Eliminar">
+                                     <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% empty %}
@@ -116,6 +144,46 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <!-- Paginación -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+
+                    {% if datos.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ datos.previous_page_number }}&search={{ search }}">
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in datos.paginator.page_range %}
+                        {% if datos.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > datos.number|add:'-3' and num < datos.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page={{ num }}&search={{ search }}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if datos.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ datos.next_page_number }}&search={{ search }}">
+                                Siguiente
+                            </a>
+                        </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
