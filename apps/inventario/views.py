@@ -1,9 +1,84 @@
-from django.shortcuts import render
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import formulario_proveedor
+from .models import Proveedores
 
 # Create your views here.
 
 def index(request):
     return 0
+
+def index_proveedor(request):
+
+    query = request.GET.get('search', '')
+
+    lista_proveedores = Proveedores.objects.all().order_by("nombre")
+
+    if query:
+        lista_proveedores = lista_proveedores.filter(
+            Q(nombre__icontains=query) |
+            Q(apellido1__icontains=query) |
+            Q(apellido2__icontains=query) |
+            Q(tipo_proveedor__icontains=query) |
+            Q(contacto__icontains=query) |
+            Q(telefono__icontains=query) |
+            Q(correo__icontains=query) |
+            Q(pais__icontains=query)
+        )
+
+    paginacion = Paginator(lista_proveedores, 10)
+    numero_pagina = request.GET.get('page')
+    proveedores = paginacion.get_page(numero_pagina)
+
+    context = {
+        "proveedores": proveedores
+    }
+
+    return render (request, "proveedores/index_proveedor.html", context)
+
+def crear_proveedor(request):
+
+    if request.method == 'POST':
+        form = formulario_proveedor(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect ("inventario:index_proveedor")
+    else:
+        form = formulario_proveedor()
+
+    context = {
+        "form": form
+    }
+
+    return render(request, "proveedores/crear_proveedor.html", context)
+
+def editar_proveedor(request, id):
+     
+    proveedor = get_object_or_404(Proveedores, id = id)
+
+    if request.method == 'POST':
+        form = formulario_proveedor(request.POST, instance=proveedor)
+        if form.is_valid():
+            form.save()
+            return redirect ("inventario:index_proveedor")
+    else:
+        form = formulario_proveedor(instance=proveedor)
+
+    context = {
+        "form": form
+    }
+
+    return render(request, "proveedores/editar_proveedor.html", context)
+
+def eliminar_proveedor(request, id):
+
+    proveedor = get_object_or_404(Proveedores, id = id)
+
+    if request.method == "POST":
+        proveedor.delete()
+
+    return redirect("inventario:index_proveedor")
 
 """
 

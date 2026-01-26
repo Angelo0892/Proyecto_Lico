@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="p-5 text-center">
+
+    <h1>Productos</h1>
+
+    <a href="{% url 'productos:crear_producto' %}">Agregar Producto</a>
+
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Buscar producto..."
+                value="{{ query }}"
+            >
+            <button class="btn btn-primary" type="submit">
+                Buscar
+            </button>
+        </div>
+    </form>
+
+    <h2>Productos</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Marca</th>
+                <th>País de Origen</th>
+                <th>Stock</th>
+                <th>Precio Unitario</th>
+                <th>Categoria</th>
+                <th>Ubicación en Almacen</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.marca }}</td>
+                <td>{{ producto.origen }}</td>
+                <td>{{ producto.stock }}</td>
+                <td>{{ producto.precio_unitario}}</td>
+                <td>{{ producto.categoria_id.nombre }}</td>
+                <td>{{ producto.ubicacion_id.nombre }}</td>
+                <td>
+                    <a href="{% url 'productos:editar_producto' producto.id %}">Actualizar</a>
+                    
+                    <form method="post" action="{% url 'productos:eliminar_producto' producto.id %}"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No hay productos</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- PAGINACIÓN -->
+    <nav>
+        <ul class="pagination">
+
+            {% if productos.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ productos.previous_page_number }}">Anterior</a>
+                </li>
+            {% endif %}
+
+            {% for num in productos.paginator.page_range %}
+                {% if productos.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if productos.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ productos.next_page_number }}">Siguiente</a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+
+    <!-- 1. Valor total del inventario por producto -->
+    <!--
+    <h2>Valor Total del Inventario</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Stock Total</th>
+                <th>Valor Inventario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in valor_total_inventario %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.cantidad }}</td>
+                <td>{{ producto.stock_total }}</td>
+                <td>${{ producto.valor_inventario|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No hay productos</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+     -->
+
+    <!-- 2. Productos que necesitan reorden -->
+
+    <!-- 
+    <h2>Productos con Stock Bajo</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Stock Actual</th>
+                <th>Proveedor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos_reorden %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.stock }}</td>
+                <td>{{ producto.proveedor_id.nombre }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">No hay productos con stock bajo</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+    -->
+
+    <!-- 3. Productos sin movimiento -->
+
+    <!-- 
+    <h2>Productos sin movimiento en los últimos 30 días</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos_sin_movimiento %}
+            <tr>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.stock }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2">Todos los productos tuvieron ventas</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+-->
+
+
+{% endblock %}

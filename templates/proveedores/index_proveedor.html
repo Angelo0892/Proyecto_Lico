@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="p-5 text-center">
+    <h1>Proveedores</h1>
+
+    <a href="{% url 'inventario:crear_proveedor' %}">Agregar Proveedor</a>
+
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Buscar producto..."
+                value="{{ query }}"
+            >
+            <button class="btn btn-primary" type="submit">
+                Buscar
+            </button>
+        </div>
+    </form>
+
+    <h2>Proveedores</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>NIT</th>
+                <th>Nombre</th>
+                <th>Apellido Paterno</th>
+                <th>Apellido Materno</th>
+                <th>Tipo de proveedor</th>
+                <th>Pais de origen</th>
+                <th>Contacto</th>
+                <th>Telefono</th>
+                <th>Correo</th>
+                <th>Fecha de registro</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+            <tr>
+                <td>{{ proveedor.nit }}</td>
+                <td>{{ proveedor.nombre }}</td>
+                <td>{{ proveedor.apellido1 }}</td>
+                <td>{{ proveedor.apellido2 }}</td>
+                <td>{{ proveedor.tipo_proveedor}}</td>
+                <td>{{ proveedor.pais }}</td>
+                <td>{{ proveedor.contacto }}</td>
+                <td>{{ proveedor.telefono }}</td>
+                <td>{{ proveedor.correo }}</td>
+                <td>{{ proveedor.fecha_registro }}</td>
+                <td>
+                    <a href="{% url 'inventario:editar_proveedor' proveedor.id %}">Actualizar</a>
+                    
+                    <form method="post" action="{% url 'inventario:eliminar_proveedor' proveedor.id %}"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">No hay Proveedores</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- PAGINACIÓN -->
+    <nav>
+        <ul class="pagination">
+
+            {% if proveedores.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ proveedores.previous_page_number }}">Anterior</a>
+                </li>
+            {% endif %}
+
+            {% for num in proveedores.paginator.page_range %}
+                {% if proveedores.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if proveedores.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ proveedores.next_page_number }}">Siguiente</a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+</div>
+{% endblock %}

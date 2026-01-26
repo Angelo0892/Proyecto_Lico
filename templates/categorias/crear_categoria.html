@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button>
+            Guardar
+        </button>
+        <a href="{% url 'productos:index_categoria' %}">Volver</a>
+    </form>
+{% endblock %}
