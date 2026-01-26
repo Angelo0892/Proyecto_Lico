@@ -6,6 +6,9 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from django.forms import inlineformset_factory
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from django.core.paginator import Paginator
+
 
 # --- FORMULARIOS ---
 from .forms import (
@@ -184,8 +187,11 @@ def crear_cliente(request):
         form = ClienteForm()
     return render(request, 'dashboard/form_cliente.html', {'form': form})
 
+# --- VISTA DE PRODUCTOS ---
+
 @login_required
 def crear_producto(request):
+    
     if request.method == 'POST':
         form = ProductoForm(request.POST)
         if form.is_valid():
@@ -421,3 +427,53 @@ def lista_usuarios(request):
         'roles': roles
     }
     return render(request, 'dashboard/lista_usuarios.html', context)
+
+@login_required
+def lista_productos(request):
+    
+    search = request.GET.get ('search', '')
+
+    datos = Producto.objects.all().order_by("nombre")
+
+    if search:
+        datos = datos.filter(
+            Q(nombre__icontains=search) |
+            Q(categoria_id__nombre__icontains=search) |
+            Q(marca__icontains=search)
+        )
+
+    paginacion = Paginator(datos, 10)
+    numero_pagina = request.GET.get('page')
+    datos = paginacion.get_page(numero_pagina)
+
+    context = {
+        "datos": datos,
+        "search": search,
+    }
+
+    return render(request, 'dashboard/lista_producto.html', context)
+
+@login_required
+def lista_categorias(request):
+    
+    search = request.GET.get ('search', '')
+
+    datos = Categoria.objects.all().order_by("nombre")
+
+    if search:
+        datos = datos.filter(
+            Q(nombre__icontains=search) |
+            Q(categoria_id__nombre__icontains=search) |
+            Q(marca__icontains=search)
+        )
+
+    paginacion = Paginator(datos, 10)
+    numero_pagina = request.GET.get('page')
+    datos = paginacion.get_page(numero_pagina)
+
+    context = {
+        "datos": datos,
+        "search": search,
+    }
+
+    return render(request, 'dashboard/lista_categoria.html', context)

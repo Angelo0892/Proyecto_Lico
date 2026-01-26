@@ -7,6 +7,7 @@
     <title>Sistema Lico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'styles/dashboard.css' %}">
     
     <style>
         body { min-height: 100vh; overflow-x: hidden; background-color: #f8f9fa; }
@@ -117,6 +118,12 @@
             <li class="nav-item">
                 <a href="{% url 'dashboard:facturacion' %}" class="nav-link {% if request.resolver_match.url_name == 'facturacion' %}active{% endif %}">
                     <i class="bi bi-receipt"></i> Facturación
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'dashboard:productos' %}" class="nav-link {% if request.resolver_match.url_name == 'facturacion' %}active{% endif %}">
+                    <i class="bi bi-receipt"></i> Productos
                 </a>
             </li>
 
