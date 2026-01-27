@@ -18,6 +18,19 @@ class Categoria(models.Model):
     nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=150, blank=True, null=True)
 
+    PERMISOS_DEFECTO = [
+        ("modulo_dashboard", "Acceso al dashboard principal"),
+        ("modulo_usuarios", "Gestión de usuarios"),
+        ("modulo_categorias", "Gestión de categorías de productos"),
+        ("modulo_facturacion", "Facturación y ventas"),
+        ("modulo_proveedores", "Gestión de proveedores"),
+        ("modulo_clientes", "Gestión de clientes"),
+        ("modulo_inventario", "Gestión de productos"),
+        ("modulo_importacion", "Gestión de importaciones"),
+        ("modulo_ventas", "Gestión de ventas"),
+        ("modulo_reportes", "Acceso a reportes"),
+    ]
+
     class Meta:
         verbose_name_plural = "Categorías"
     def __str__(self): return self.nombre
@@ -62,6 +75,11 @@ class Usuario(models.Model):
     rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True)
     activo = models.BooleanField(default=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
+
+    def tiene_permiso(self, permiso):
+        if not self.rol:
+            return False
+        return self.rol.permisos.filter(nombre=permiso).exists()
 
     def __str__(self):
         return f"{self.nombre} {self.apellido}"

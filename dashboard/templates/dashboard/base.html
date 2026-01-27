@@ -1,4 +1,5 @@
 {% load static %}
+{% load permisos %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -75,66 +76,82 @@
         </div>
         
         <ul class="nav flex-column">
+            {% if request.user|tiene_permiso:"modulo_dashboard" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:principal' %}" class="nav-link {% if request.resolver_match.url_name == 'principal' %}active{% endif %}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
-
+            {% endif %}
             <div class="sidebar-heading">Operaciones</div>
             
+            {% if request.user|tiene_permiso:"modulo_ventas" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:ventas' %}" class="nav-link {% if request.resolver_match.url_name == 'ventas' %}active{% endif %}">
                     <i class="bi bi-cart3"></i> Ventas
                 </a>
             </li>
-            
+            {% endif %}
+
+            {% if request.user|tiene_permiso:"modulo_inventario" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:inventario' %}" class="nav-link {% if request.resolver_match.url_name == 'inventario' %}active{% endif %}">
                     <i class="bi bi-boxes"></i> Inventario
                 </a>
             </li>
+            {% endif %}
             
+            {% if request.user|tiene_permiso:"modulo_importacion" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:importaciones' %}" class="nav-link {% if request.resolver_match.url_name == 'importaciones' %}active{% endif %}">
                     <i class="bi bi-truck"></i> Importaciones
                 </a>
             </li>
-
+            {% endif %}
+            
             <div class="sidebar-heading">Gestión</div>
 
+            {% if request.user|tiene_permiso:"modulo_clientes" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:clientes' %}" class="nav-link {% if request.resolver_match.url_name == 'clientes' %}active{% endif %}">
                     <i class="bi bi-people"></i> Clientes
                 </a>
             </li>
+            {% endif %}
 
+            {% if request.user|tiene_permiso:"modulo_proveedores" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:proveedores' %}" class="nav-link {% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
                     <i class="bi bi-building"></i> Proveedores
                 </a>
             </li>
+            {% endif %}
 
+            {% if request.user|tiene_permiso:"modulo_facturacion" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:facturacion' %}" class="nav-link {% if request.resolver_match.url_name == 'facturacion' %}active{% endif %}">
                     <i class="bi bi-receipt"></i> Facturación
                 </a>
             </li>
+            {% endif %}
 
-
+            {% if request.user|tiene_permiso:"modulo_categorias" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:categorias' %}" class="nav-link {% if request.resolver_match.url_name == 'categorias' %}active{% endif %}">
                     <i class="bi bi-tags"></i> Categorias de Producto
                 </a>
             </li>
+            {% endif %}
 
             <div class="sidebar-heading">Administración</div>
 
+            {% if request.user|tiene_permiso:"modulo_usuarios" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:usuarios' %}" class="nav-link {% if request.resolver_match.url_name == 'usuarios' %}active{% endif %}">
                     <i class="bi bi-person-badge"></i> Usuarios & Roles
                 </a>
             </li>
+            {% endif %}
             
             <li class="nav-item">
                 <a href="/admin/" target="_blank" class="nav-link">

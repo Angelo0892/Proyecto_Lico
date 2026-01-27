@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from django.contrib import messages
 from django.http import HttpResponse
 from django.db import transaction
+from .decorators import permiso_requerido
 
 # --- FORMULARIOS ---
 from .forms import (
@@ -32,11 +33,13 @@ from .models import (
 )
 
 @login_required
+@permiso_requerido('modulo_dashboard')
 def principal(request):
     """ Función puente para redirigir al dashboard principal """
     return dashboard_principal(request)
 
 @login_required
+@permiso_requerido('modulo_dashboard')
 def dashboard_principal(request):
     """ Dashboard Operativo: Foco en Caja y Categorías """
     hoy = timezone.now().date()
@@ -104,6 +107,7 @@ def dashboard_principal(request):
     return render(request, 'dashboard/principal.html', context)
 
 @login_required
+@permiso_requerido('modulo_ventas')
 def dashboard_ventas(request):
     """ Vista detallada de Ventas """
     fecha_inicio = request.GET.get('fecha_inicio', (timezone.now() - timedelta(days=30)).date())
@@ -145,6 +149,7 @@ def dashboard_ventas(request):
     return render(request, 'dashboard/ventas.html', context)
 
 @login_required
+@permiso_requerido('modulo_inventario')
 def dashboard_inventario(request):
     """ Vista de Inventario """
     productos = Producto.objects.filter(activo=True).select_related('categoria', 'proveedor')
@@ -166,6 +171,7 @@ def dashboard_inventario(request):
     return render(request, 'dashboard/inventario.html', context)
 
 @login_required
+@permiso_requerido('modulo_importacion')
 def dashboard_importaciones(request):
     """ Vista de Importaciones """
     importaciones = Importacion.objects.all().order_by('-fecha_pedido')
@@ -184,6 +190,7 @@ def dashboard_importaciones(request):
 # --- VISTAS DE Clientes ---
 
 @login_required
+@permiso_requerido('modulo_clientes')
 def crear_cliente(request):
     if request.method == 'POST':
         form = ClienteForm(request.POST)
@@ -195,6 +202,7 @@ def crear_cliente(request):
     return render(request, 'dashboard/form_cliente.html', {'form': form})
 
 @login_required
+@permiso_requerido('modulo_clientes')
 def editar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     
@@ -220,6 +228,7 @@ def eliminar_cliente(request, pk):
 # --- VISTA DE PRODUCTOS ---
 
 @login_required
+@permiso_requerido('modulo_inventario')
 def crear_producto(request):
     
     if request.method == 'POST':
@@ -232,6 +241,7 @@ def crear_producto(request):
     return render(request, 'dashboard/form_producto.html', {'form': form})
 
 @login_required
+@permiso_requerido('modulo_inventario')
 def editar_producto(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
     
@@ -253,6 +263,7 @@ def editar_producto(request, pk):
 # --- VISTA DE Categorias ---
 
 @login_required
+@permiso_requerido('modulo_categorias')
 def crear_categoria(request):
     
     if request.method == 'POST':
@@ -265,6 +276,7 @@ def crear_categoria(request):
     return render(request, 'dashboard/form_categoria.html', {'form': form})
 
 @login_required
+@permiso_requerido('modulo_categorias')
 def editar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     
@@ -284,6 +296,7 @@ def editar_categoria(request, pk):
     })
 
 @login_required
+@permiso_requerido('modulo_categorias')
 def eliminar_categoria(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     
@@ -297,6 +310,7 @@ def eliminar_categoria(request, pk):
 # --- VISTA DE Importaciones ---
 
 @login_required
+@permiso_requerido('modulo_importacion')
 def crear_importacion(request):
     proveedores = Proveedor.objects.all()
     return render(request, "dashboard/form_importacion.html", {
@@ -305,6 +319,7 @@ def crear_importacion(request):
 
 
 @login_required
+@permiso_requerido('modulo_importacion')
 def buscar_productos_importacion(request):
     q = request.GET.get("q", "")
     productos = Producto.objects.filter(nombre__icontains=q, activo=True)
@@ -323,6 +338,7 @@ def buscar_productos_importacion(request):
 
 
 @login_required
+@permiso_requerido('modulo_importacion')
 @transaction.atomic
 def guardar_importacion(request):
     if request.method == "POST":
@@ -345,6 +361,7 @@ def guardar_importacion(request):
         return redirect("dashboard:importaciones")   
 
 @transaction.atomic
+@permiso_requerido('modulo_importacion')
 def ingresar_stock_importacion(importacion):
     if importacion.stock_ingresado:
         return  # ⚠️ Evita doble ingreso
@@ -360,6 +377,7 @@ def ingresar_stock_importacion(importacion):
     importacion.save()
 
 @login_required
+@permiso_requerido('modulo_importacion')
 def recibir_importacion(request, pk):
     importacion = get_object_or_404(Importacion, pk=pk)
 
@@ -373,6 +391,7 @@ def recibir_importacion(request, pk):
 
 # --- Vista de proveedores ---
 @login_required
+@permiso_requerido('modulo_proveedores')
 def crear_proveedor(request):
     if request.method == 'POST':
         form = ProveedorForm(request.POST)
@@ -384,6 +403,7 @@ def crear_proveedor(request):
     return render(request, 'dashboard/form_proveedor.html', {'form': form})
 
 @login_required
+@permiso_requerido('modulo_proveedores')
 def editar_proveedor(request, pk):
     proveedor = get_object_or_404(Proveedor, pk=pk)
     
@@ -403,6 +423,7 @@ def editar_proveedor(request, pk):
     })
 
 @login_required
+@permiso_requerido('modulo_proveedores')
 def eliminar_proveedor(request, pk):
     proveedor = get_object_or_404(Proveedor, pk = pk)
 
@@ -414,6 +435,7 @@ def eliminar_proveedor(request, pk):
 
 # --- Vistas de usuarios ---
 @login_required
+@permiso_requerido('modulo_usuarios')
 def crear_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
@@ -425,6 +447,7 @@ def crear_usuario(request):
     return render(request, 'dashboard/form_usuario.html', {'form': form})
 
 @login_required
+@permiso_requerido('modulo_usuarios')
 def crear_rol(request):
     if request.method == 'POST':
         form = RolForm(request.POST)
@@ -437,6 +460,7 @@ def crear_rol(request):
 
 # --- Funciones para la venta ---
 @login_required
+@permiso_requerido('modulo_ventas')
 def crear_venta(request):
     """Vista principal para crear la venta"""
     productos_list = Producto.objects.all().order_by("nombre")
@@ -449,6 +473,7 @@ def crear_venta(request):
     })
 
 @login_required
+@permiso_requerido('modulo_ventas')
 def guardar_venta(request):
     if request.method != "POST":
         return redirect("dashboard:crear_venta")
@@ -516,6 +541,7 @@ def guardar_venta(request):
 
 
 @login_required
+@permiso_requerido('modulo_ventas')
 def resumen_confirmar_venta(request):
     if request.method != "POST":
         return redirect("dashboard:crear_venta")
@@ -554,6 +580,7 @@ def resumen_confirmar_venta(request):
 
 # --- NUEVA FUNCIÓN PARA EDITAR ---
 @login_required
+@permiso_requerido('modulo_ventas')
 def editar_venta(request, pk):
     venta = get_object_or_404(Venta, pk=pk)
     
@@ -613,6 +640,7 @@ def editar_venta(request, pk):
 # --- Vista facturas ---
 
 @login_required
+@permiso_requerido('modulo_facturacion')
 def detalle_factura(request, pk):
     """
     Muestra la factura en detalle y permite actualizar su estado (válida o no).
@@ -632,6 +660,7 @@ def detalle_factura(request, pk):
 
 # --- Creacion de factura en pdf en proceso --- 
 @login_required
+@permiso_requerido('modulo_facturacion')
 def factura_pdf(request, pk):
     """
     Genera la factura en PDF y permite descargarla usando PDFKit.
@@ -660,6 +689,7 @@ def factura_pdf(request, pk):
 # --- VISTAS DE LISTADOS (Tablas) ---
 
 @login_required
+@permiso_requerido('modulo_clientes')
 def lista_clientes(request):
     search = request.GET.get ('search', '')
 
@@ -689,6 +719,7 @@ def lista_clientes(request):
     return render(request, 'dashboard/lista_clientes.html', context)
 
 @login_required
+@permiso_requerido('modulo_proveedores')
 def lista_proveedores(request):
     search = request.GET.get('search', '')
 
@@ -717,6 +748,7 @@ def lista_proveedores(request):
     return render(request, 'dashboard/lista_proveedores.html', context)
 
 @login_required
+@permiso_requerido('modulo_facturacion')
 def lista_facturas(request):
     # Traemos facturas con datos de cliente
     facturas = Factura.objects.select_related('venta__cliente').all().order_by('-fecha_emision')
@@ -739,6 +771,7 @@ def lista_facturas(request):
     return render(request, 'dashboard/lista_facturas.html', context)
 
 @login_required
+@permiso_requerido('modulo_usuarios')
 def lista_usuarios(request):
     # Traemos usuarios y roles
     usuarios = Usuario.objects.select_related('rol').all()
@@ -751,6 +784,7 @@ def lista_usuarios(request):
     return render(request, 'dashboard/lista_usuarios.html', context)
 
 @login_required
+@permiso_requerido('modulo_inventario')
 def lista_productos(request):
     
     search = request.GET.get ('search', '')
@@ -776,6 +810,7 @@ def lista_productos(request):
     return render(request, 'dashboard/lista_producto.html', context)
 
 @login_required
+@permiso_requerido('modulo_categorias')
 def lista_categorias(request):
     
     search = request.GET.get ('search', '')
@@ -800,6 +835,7 @@ def lista_categorias(request):
     return render(request, 'dashboard/lista_categorias.html', context)
 
 @login_required
+@permiso_requerido('modulo_clientes')
 def buscar_clientes(request):
     q = request.GET.get('q', '')
     clientes = Cliente.objects.filter(
@@ -811,12 +847,14 @@ def buscar_clientes(request):
 # BUSCADOR PRODUCTOS AJAX
 # ===================================================
 @login_required
+@permiso_requerido('modulo_inventario')
 def lista_venta_productos(request):
     """Vista principal de venta"""
     productos = Producto.objects.all().order_by("nombre")
     return render(request, "dashboard/form_venta.html", {"productos": productos})
 
 @login_required
+@permiso_requerido('modulo_inventario')
 def buscar_productos_ajax(request):
     query = request.GET.get("q", "")
     page = request.GET.get("page", 1)
