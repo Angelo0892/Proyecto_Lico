@@ -1,3 +1,4 @@
+import pdfkit
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count, F
@@ -12,7 +13,6 @@ from django.http import JsonResponse
 from decimal import Decimal
 from django.template.loader import render_to_string
 from django.contrib import messages
-#from weasyprint import HTML
 from django.http import HttpResponse
 
 # --- FORMULARIOS ---
@@ -565,16 +565,29 @@ def detalle_factura(request, pk):
     return render(request, "dashboard/detalle_factura.html", {"factura": factura})
 
 
+# --- Creacion de factura en pdf en proceso --- 
 @login_required
 def factura_pdf(request, pk):
     """
-    Genera la factura en PDF y permite descargarla.
+    Genera la factura en PDF y permite descargarla usando PDFKit.
     """
+    # Obtener la factura
     factura = get_object_or_404(Factura, pk=pk)
-    html_string = render_to_string("dashboard/factura_pdf.html", {"factura": factura})
-    html = HTML(string=html_string)
-    pdf = html.write_pdf()
 
+    # Renderizar la plantilla HTML con los datos de la factura
+    html_string = render_to_string("dashboard/factura_pdf.html", {"factura": factura})
+
+    # Configuración opcional para wkhtmltopdf (puedes ajustar la ruta en Windows)
+    options = {
+        'page-size': 'A4',
+        'encoding': 'UTF-8',
+        'no-outline': None,
+    }
+
+    # Generar PDF desde la plantilla HTML
+    pdf = pdfkit.from_string(html_string, False, options=options)
+
+    # Crear respuesta HTTP para descarga
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename=factura_{factura.numero_factura}.pdf'
     return response

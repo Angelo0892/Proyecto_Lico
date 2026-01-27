@@ -33,6 +33,10 @@
                 <i class="bi bi-receipt fs-4 me-2"></i>
                 <h4 class="m-0">Detalle Factura #{{ factura.numero_factura }}</h4>
             </div>
+
+            <button class="btn btn-success btn-sm" onclick="window.print()">
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
         </div>
 
         <div class="card-body p-4">
@@ -98,7 +102,11 @@
                         <input type="text" class="form-control" value="Bs {{ pago.monto }}" readonly>
                     </div>
                 {% endfor %}
-
+                <hr>
+                <div class="mb-2">
+                    <label>Fecha de emision</label>
+                    <input type="text" class="form-control" value="{{ factura.fecha_emision}}" readonly>
+                </div>
                 <hr>
                 <h6 class="text-primary mb-3">Estado de Factura</h6>
                 <div class="mb-3">
