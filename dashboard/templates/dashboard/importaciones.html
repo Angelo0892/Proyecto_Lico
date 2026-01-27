@@ -95,9 +95,30 @@
                                 </td>
                                 <td class="text-end">${{ imp.costo_total|floatformat:2 }}</td>
                                 <td class="text-center">
-                                    <a href="/admin/dashboard/importacion/{{ imp.id }}/change/" class="btn btn-sm btn-outline-primary" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    <div class="btn-group" role="group">
+
+                                        <!-- Editar -->
+                                        <a href="/admin/dashboard/importacion/{{ imp.id }}/change/"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <!-- Recibir productos -->
+                                        {% if imp.estado != "RECIBIDO" %}
+                                        <a href="{% url 'dashboard:recibir_importacion' imp.id %}"
+                                        class="btn btn-sm btn-success"
+                                        title="Recibir productos"
+                                        onclick="return confirm('¿Confirmar recepción de productos y actualización de stock?')">
+                                            <i class="bi bi-box-arrow-in-down"></i>
+                                        </a>
+                                        {% else %}
+                                        <span class="badge bg-success align-self-center ms-2">
+                                            RECIBIDO
+                                        </span>
+                                        {% endif %}
+
+                                    </div>
                                 </td>
                             </tr>
                             {% empty %}

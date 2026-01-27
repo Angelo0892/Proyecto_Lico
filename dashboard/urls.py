@@ -50,4 +50,8 @@ urlpatterns = [
     path('buscar_productos_ajax/', views.buscar_productos_ajax, name='buscar_productos_ajax'),
     path('confirmar_venta/', views.resumen_confirmar_venta, name='confirmar_venta'),
     path('guardar_venta/', views.guardar_venta, name='guardar_venta'),
+    path("importaciones/buscar-productos/", views.buscar_productos_importacion, name="buscar_productos_importacion"),
+    path("importaciones/guardar/", views.guardar_importacion, name="guardar_importacion"),
+    path("importaciones/<int:pk>/recibir/", views.recibir_importacion, name="recibir_importacion"),
+
 ]

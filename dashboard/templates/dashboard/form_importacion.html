@@ -1,53 +1,192 @@
 {% extends "dashboard/base.html" %}
-
 {% block content %}
+
 <style>
-    .contenido-ajustado { margin-left: 250px; padding: 40px; width: calc(100% - 250px); }
-    @media (max-width: 768px) { .contenido-ajustado { margin-left: 0; width: 100%; padding-top: 60px; } }
-    .form-card { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.main-content{
+    margin-left:250px;
+    padding:30px;
+    background:#f0f2f5;
+    min-height:100vh;
+}
+.chart-card{
+    background:white;
+    border-radius:12px;
+    padding:30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+@media(max-width:768px){
+    .main-content{margin-left:0;padding-top:70px;}
+}
 </style>
 
-<div class="contenido-ajustado">
-    <div class="form-card">
-        <div class="card-header bg-warning text-dark p-3 rounded-top d-flex align-items-center">
-            <i class="bi bi-truck fs-4 me-2"></i>
-            <h4 class="m-0">Planificar Importación</h4>
-        </div>
-        <div class="card-body p-4">
-            <form method="post">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Proveedor</label>
-                    {{ form.proveedor }}
-                </div>
-                
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <label class="form-label">Fecha Pedido</label>
-                        {{ form.fecha_pedido }}
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label">Llegada Estimada</label>
-                        {{ form.fecha_llegada }}
-                    </div>
-                </div>
+<div class="main-content">
+<div class="chart-card">
 
-                <div class="mb-3">
-                    <label class="form-label">Estado Inicial</label>
-                    {{ form.estado }}
-                </div>
+<h4 class="mb-4">
+<i class="bi bi-truck text-primary"></i> Nueva Importación
+</h4>
 
-                <div class="mb-4">
-                    <label class="form-label">Observaciones</label>
-                    {{ form.observacion }}
-                </div>
+<form method="post" id="importacionForm" action="{% url 'dashboard:guardar_importacion' %}">
+{% csrf_token %}
 
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-warning text-dark fw-bold">Crear Orden de Compra</button>
-                    <a href="{% url 'dashboard:importaciones' %}" class="btn btn-light text-muted">Cancelar</a>
-                </div>
-            </form>
-        </div>
+<!-- ================= IMPORTACIÓN ================= -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <label>Proveedor</label>
+        <select class="form-control" name="proveedor_id" required>
+            <option value="">Seleccione</option>
+            {% for p in proveedores %}
+            <option value="{{ p.id }}">{{ p.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label>Fecha pedido</label>
+        <input type="date" class="form-control" name="fecha_pedido" required>
+    </div>
+
+    <div class="col-md-3">
+        <label>Fecha llegada</label>
+        <input type="date" class="form-control" name="fecha_llegada">
+    </div>
+
+    <div class="col-md-3">
+        <label>Estado</label>
+        <select class="form-control" name="estado">
+            <option>PLANIFICADO</option>
+            <option>EN_TRANSITO</option>
+            <option>RECIBIDO</option>
+        </select>
     </div>
 </div>
+
+<!-- ================= PRODUCTOS ================= -->
+<h5>Productos disponibles</h5>
+<input type="text" id="buscarProducto" class="form-control mb-2"
+       placeholder="Buscar producto">
+
+<div class="table-responsive mb-3">
+<table class="table table-bordered table-hover">
+<thead class="table-light">
+<tr>
+    <th>Nombre</th>
+    <th>Proveedor</th>
+    <th>Precio Compra</th>
+    <th>Stock</th>
+    <th></th>
+</tr>
+</thead>
+<tbody id="productosBody"></tbody>
+</table>
+</div>
+
+<!-- ================= CARRITO ================= -->
+<h5>Detalle de importación</h5>
+<div class="table-responsive">
+<table class="table table-bordered" id="tablaImportacion">
+<thead class="table-light">
+<tr>
+    <th>Producto</th>
+    <th>Cantidad</th>
+    <th>Precio</th>
+    <th>Subtotal</th>
+    <th></th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<div class="d-flex justify-content-end mb-3">
+    <h5>Total: Bs <span id="totalCompra">0.00</span></h5>
+</div>
+
+<input type="hidden" name="total" id="totalHidden">
+
+<button class="btn btn-primary">
+<i class="bi bi-save"></i> Guardar Importación
+</button>
+
+</form>
+</div>
+</div>
+
+<script>
+const buscarProducto = document.getElementById("buscarProducto");
+const productosBody = document.getElementById("productosBody");
+const tabla = document.querySelector("#tablaImportacion tbody");
+const totalSpan = document.getElementById("totalCompra");
+
+buscarProducto.addEventListener("input", ()=>{
+    fetch("{% url 'dashboard:buscar_productos_importacion' %}?q="+buscarProducto.value)
+    .then(r=>r.json())
+    .then(data=>{
+        productosBody.innerHTML="";
+        data.forEach(p=>{
+            productosBody.innerHTML+=`
+            <tr data-id="${p.id}" data-nombre="${p.nombre}" data-precio="${p.precio_compra}">
+                <td>${p.nombre}</td>
+                <td>${p.proveedor}</td>
+                <td>${p.precio_compra}</td>
+                <td>${p.stock}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-success btn-add">+</button>
+                </td>
+            </tr>`;
+        });
+    });
+});
+
+productosBody.onclick = e =>{
+    if(!e.target.classList.contains("btn-add")) return;
+    const tr = e.target.closest("tr");
+    const id = tr.dataset.id;
+
+    if([...tabla.children].some(r=>r.dataset.id===id)) return;
+
+    tabla.insertAdjacentHTML("beforeend",`
+    <tr data-id="${id}">
+        <td>${tr.dataset.nombre}</td>
+        <td><input type="number" class="form-control cant" value="1"></td>
+        <td><input type="number" class="form-control precio" value="${tr.dataset.precio}" step="0.01"></td>
+        <td class="sub">${tr.dataset.precio}</td>
+        <td><button type="button" class="btn btn-danger btn-sm">✕</button></td>
+    </tr>`);
+    calcular();
+};
+
+tabla.oninput = calcular;
+
+tabla.onclick = e=>{
+    if(e.target.tagName==="BUTTON"){
+        e.target.closest("tr").remove();
+        calcular();
+    }
+};
+
+function calcular(){
+    let total=0;
+    tabla.querySelectorAll("tr").forEach(r=>{
+        const c=r.querySelector(".cant").value;
+        const p=r.querySelector(".precio").value;
+        const s=c*p;
+        r.querySelector(".sub").textContent=s.toFixed(2);
+        total+=s;
+    });
+    totalSpan.textContent=total.toFixed(2);
+}
+
+document.getElementById("importacionForm").addEventListener("submit",function(){
+    totalHidden.value = totalSpan.textContent;
+    tabla.querySelectorAll("tr").forEach(r=>{
+        this.insertAdjacentHTML("beforeend",`
+        <input type="hidden" name="producto_id[]" value="${r.dataset.id}">
+        <input type="hidden" name="cantidad[]" value="${r.querySelector('.cant').value}">
+        <input type="hidden" name="precio[]" value="${r.querySelector('.precio').value}">
+        `);
+    });
+});
+</script>
+
 {% endblock %}

@@ -127,6 +127,8 @@ class Importacion(models.Model): # Tabla Importaciones
     estado = models.CharField(max_length=20, default='PLANIFICADO')
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     observacion = models.TextField(blank=True, null=True)
+
+    stock_ingresado = models.BooleanField(default=False)
     
     # Alias para dashboard (ImportacionLote usa estos nombres)
     @property

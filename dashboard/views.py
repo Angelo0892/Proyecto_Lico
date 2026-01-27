@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.template.loader import render_to_string
 from django.contrib import messages
 from django.http import HttpResponse
+from django.db import transaction
 
 # --- FORMULARIOS ---
 from .forms import (
@@ -297,14 +298,78 @@ def eliminar_categoria(request, pk):
 
 @login_required
 def crear_importacion(request):
-    if request.method == 'POST':
-        form = ImportacionForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('dashboard:importaciones')
-    else:
-        form = ImportacionForm()
-    return render(request, 'dashboard/form_importacion.html', {'form': form})
+    proveedores = Proveedor.objects.all()
+    return render(request, "dashboard/form_importacion.html", {
+        "proveedores": proveedores
+    })
+
+
+@login_required
+def buscar_productos_importacion(request):
+    q = request.GET.get("q", "")
+    productos = Producto.objects.filter(nombre__icontains=q, activo=True)
+
+    data = []
+    for p in productos:
+        data.append({
+            "id": p.id,
+            "nombre": p.nombre,
+            "codigo": p.codigo,
+            "proveedor": p.proveedor.nombre if p.proveedor else "",
+            "precio_compra": float(p.precio_compra),
+            "stock": p.stock_actual,
+        })
+    return JsonResponse(data, safe=False)
+
+
+@login_required
+@transaction.atomic
+def guardar_importacion(request):
+    if request.method == "POST":
+        importacion = Importacion.objects.create(
+            proveedor_id=request.POST["proveedor_id"],
+            fecha_pedido=request.POST["fecha_pedido"],
+            fecha_llegada=request.POST.get("fecha_llegada") or None,
+            estado=request.POST["estado"],
+            total=request.POST["total"]
+        )
+
+        for i in range(len(request.POST.getlist("producto_id[]"))):
+            DetalleImportacion.objects.create(
+                importacion=importacion,
+                producto_id=request.POST.getlist("producto_id[]")[i],
+                cantidad=request.POST.getlist("cantidad[]")[i],
+                costo_unitario=request.POST.getlist("precio[]")[i],
+            )
+
+        return redirect("dashboard:importaciones")   
+
+@transaction.atomic
+def ingresar_stock_importacion(importacion):
+    if importacion.stock_ingresado:
+        return  # ⚠️ Evita doble ingreso
+
+    for detalle in importacion.detalleimportacion_set.all():
+        producto = detalle.producto
+        producto.stock_actual += detalle.cantidad
+        producto.precio_compra = detalle.costo_unitario  # opcional
+        producto.save()
+
+    importacion.stock_ingresado = True
+    importacion.estado = "RECIBIDO"
+    importacion.save()
+
+@login_required
+def recibir_importacion(request, pk):
+    importacion = get_object_or_404(Importacion, pk=pk)
+
+    if importacion.estado == "RECIBIDO":
+        return redirect("dashboard:importaciones")
+
+    ingresar_stock_importacion(importacion)
+
+    messages.success(request, "Stock ingresado correctamente.")
+    return redirect("dashboard:importaciones")
 
 # --- Vista de proveedores ---
 @login_required
