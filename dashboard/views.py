@@ -8,7 +8,8 @@ from django.forms import inlineformset_factory
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
-
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 # --- FORMULARIOS ---
 from .forms import (
@@ -367,62 +368,14 @@ def crear_rol(request):
 
 @login_required
 def crear_venta(request):
-    # CAMBIO: extra=1 (Empieza con una sola fila vacía, no 3)
-    DetalleVentaFormSet = inlineformset_factory(
-        Venta, DetalleVenta, form=DetalleVentaForm,
-        extra=1, can_delete=True
-    )
+    """Vista principal para crear la venta"""
+    productos_list = Producto.objects.all().order_by("nombre")
+    paginator = Paginator(productos_list, 10)
+    page_number = request.GET.get('page')
+    productos = paginator.get_page(page_number)
 
-    if request.method == 'POST':
-        form = VentaForm(request.POST)
-        formset = DetalleVentaFormSet(request.POST)
-
-        if form.is_valid() and formset.is_valid():
-            venta = form.save(commit=False)
-            
-            # Asignación automática de empleado
-            empleado = Usuario.objects.filter(activo=True).first()
-            if empleado:
-                venta.usuario = empleado
-                venta.save()
-            else:
-                return render(request, 'dashboard/form_venta.html', {
-                    'form': form, 'formset': formset,
-                    'error_mensaje': 'Error: No hay empleados activos.'
-                })
-            
-            detalles = formset.save(commit=False)
-            total_venta = 0
-
-            for detalle in detalles:
-                # Si no seleccionó producto (fila vacía), continuar
-                if not detalle.producto:
-                    continue
-
-                producto = detalle.producto
-                detalle.venta = venta
-                detalle.precio_unitario = producto.precio_venta
-                detalle.subtotal = detalle.cantidad * producto.precio_venta
-                
-                detalle.save()
-                total_venta += detalle.subtotal
-
-                # Descontar stock
-                producto.stock_actual -= detalle.cantidad
-                producto.save()
-
-            venta.total = total_venta
-            venta.save()
-
-            return redirect('dashboard:ventas')
-    else:
-        form = VentaForm()
-        formset = DetalleVentaFormSet()
-
-    return render(request, 'dashboard/form_venta.html', {
-        'form': form,
-        'formset': formset,
-        'titulo': 'Registrar Nueva Venta'
+    return render(request, "dashboard/form_venta.html", {
+        "productos": productos,
     })
 
 # --- NUEVA FUNCIÓN PARA EDITAR ---
@@ -624,3 +577,46 @@ def lista_categorias(request):
     }
 
     return render(request, 'dashboard/lista_categorias.html', context)
+
+@login_required
+def buscar_clientes(request):
+    q = request.GET.get('q', '')
+    clientes = Cliente.objects.filter(
+        Q(nombre__icontains=q) | Q(ci__icontains=q) | Q(nit__icontains=q)
+    ).values('id','nombre','ci','nit')[:10]
+    return JsonResponse(list(clientes), safe=False)
+
+# ===================================================
+# BUSCADOR PRODUCTOS AJAX
+# ===================================================
+@login_required
+def lista_venta_productos(request):
+    """Vista principal de venta"""
+    productos = Producto.objects.all().order_by("nombre")
+    return render(request, "dashboard/form_venta.html", {"productos": productos})
+
+@login_required
+def buscar_productos_ajax(request):
+    query = request.GET.get("q", "")
+    page = request.GET.get("page", 1)
+
+    productos = Producto.objects.all().order_by("nombre")
+    if query:
+        productos = productos.filter(
+            Q(nombre__icontains=query) | Q(codigo__icontains=query)
+        )
+
+    paginador = Paginator(productos, 5)
+    productos_page = paginador.get_page(page)
+
+    html = render_to_string(
+        "dashboard/partials/productos_table_rows.html",
+        {"productos": productos_page}
+    )
+
+    data = {
+        "html": html,
+        "num_pages": paginador.num_pages,
+        "current_page": productos_page.number,
+    }
+    return JsonResponse(data)

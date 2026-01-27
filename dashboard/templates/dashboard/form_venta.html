@@ -2,147 +2,216 @@
 
 {% block content %}
 <style>
-    .main-content { margin-left: 250px; padding: 30px; background-color: #f0f2f5; min-height: 100vh; }
-    .chart-card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); max-width: 900px; margin: 0 auto; }
-    
-    /* Ocultar el checkbox original de Django */
-    .hidden-delete { display: none; }
-    
-    /* Estilo para fila eliminada visualmente */
-    .deleted-row { display: none; }
-
-    @media (max-width: 768px) { .main-content { margin-left: 0; padding-top: 70px; } }
+.main-content { margin-left: 250px; padding: 30px; background-color: #f0f2f5; min-height: 100vh; }
+.chart-card { background:white; border-radius:12px; padding:30px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+.table-custom td, .table-custom th { vertical-align: middle; }
+@media (max-width:768px){ .main-content{margin-left:0;padding-top:70px;} }
 </style>
 
 <div class="main-content">
     <div class="chart-card">
-        <div class="border-bottom pb-3 mb-4 d-flex justify-content-between align-items-center">
-            <h4 class="m-0 text-dark fw-bold"><i class="bi bi-cart-check text-primary me-2"></i> {{ titulo }}</h4>
-            <a href="{% url 'dashboard:ventas' %}" class="btn btn-outline-secondary btn-sm">Volver</a>
+        <h4 class="mb-4"><i class="bi bi-cart-check text-primary"></i> Crear Venta</h4>
+
+        <!-- BUSCADOR CLIENTES -->
+        <h5>Cliente</h5>
+        <input type="text" id="buscarCliente" class="form-control mb-2" placeholder="Buscar cliente por nombre, CI o NIT">
+        <ul class="list-group mb-3" id="resultadosClientes"></ul>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label>Nombre</label>
+                <input type="text" id="cliente_nombre" class="form-control" readonly>
+            </div>
+            <div class="col-md-4">
+                <label>CI</label>
+                <input type="text" id="cliente_ci" class="form-control" readonly>
+            </div>
+            <div class="col-md-4">
+                <label>NIT</label>
+                <input type="text" id="cliente_nit" class="form-control" readonly>
+            </div>
         </div>
 
-        <form method="post" id="ventaForm">
-            {% csrf_token %}
-            
-            <div class="row g-3 mb-4 bg-light p-3 rounded border">
-                <div class="col-md-5">
-                    <label class="form-label fw-bold">Cliente</label>
-                    {{ form.cliente }}
-                </div>
-                
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Estado Actual</label>
-                    {{ form.estado }}
-                </div>
+        <!-- PRODUCTOS DISPONIBLES -->
+        <h5>Productos disponibles</h5>
+        <input type="text" id="buscarProducto" class="form-control mb-2" placeholder="Buscar productos">
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered table-hover table-custom" id="tablaProductos">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Código</th>
+                        <th>Precio</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="productosBody">
+                    {% for p in productos %}
+                    <tr data-id="{{ p.id }}" data-nombre="{{ p.nombre }}" data-precio="{{ p.precio_venta }}">
+                        <td>{{ p.nombre }}</td>
+                        <td>{{ p.codigo }}</td>
+                        <td>{{ p.precio_venta }}</td>
+                        <td><button class="btn btn-sm btn-success btn-add">Agregar</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <nav>
+                <ul class="pagination" id="paginacionProductos"></ul>
+            </nav>
+        </div>
 
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Observación</label>
-                    {{ form.observacion }}
-                </div>
-            </div>
+        
 
-            <h5 class="mb-3">Productos</h5>
-            
-            {{ formset.management_form }}
+        <!-- TABLA VENTA -->
+        <h5>Carrito de venta</h5>
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered table-hover table-custom" id="tablaVenta">
+                <thead class="table-light">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Total</th>
+                        <th>Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle" id="tablaProductos">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 60%;">Producto</th>
-                            <th style="width: 25%;">Cantidad</th>
-                            <th style="width: 15%;" class="text-center">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for form_detalle in formset %}
-                        <tr class="form-row">
-                            <td>
-                                {% for hidden in form_detalle.hidden_fields %}
-                                    {{ hidden }}
-                                {% endfor %}
-                                {{ form_detalle.producto }}
-                                {% if form_detalle.producto.errors %}
-                                    <div class="text-danger small">{{ form_detalle.producto.errors }}</div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {{ form_detalle.cantidad }}
-                            </td>
-                            <td class="text-center">
-                                <span class="hidden-delete">{{ form_detalle.DELETE }}</span>
-                                <button type="button" class="btn btn-outline-danger btn-sm btn-remove">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="d-flex justify-content-end mb-4">
+            <h5>Total: Bs <span id="totalCompra">0.00</span></h5>
+        </div>
 
-            <div class="mb-4">
-                <button type="button" class="btn btn-success btn-sm shadow-sm" id="add-product">
-                    <i class="bi bi-plus-lg"></i> Agregar otro producto
-                </button>
-            </div>
-
-            <hr>
-
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary fw-bold px-4">
-                    <i class="bi bi-save"></i> Guardar Venta
-                </button>
-            </div>
-        </form>
+        <button class="btn btn-primary">Guardar Venta</button>
     </div>
 </div>
 
-<div id="empty-form" style="display:none;">
-    <table>
-        <tr class="form-row">
-            <td>{{ formset.empty_form.producto }}</td>
-            <td>{{ formset.empty_form.cantidad }}</td>
-            <td class="text-center">
-                <span class="hidden-delete">{{ formset.empty_form.DELETE }}</span>
-                <button type="button" class="btn btn-outline-danger btn-sm btn-remove">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        </tr>
-    </table>
-</div>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const addButton = document.getElementById('add-product');
-        const totalForms = document.getElementById('id_detalleventa_set-TOTAL_FORMS');
-        const tableBody = document.querySelector('#tablaProductos tbody');
-        
-        addButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            let formIdx = totalForms.value;
-            const emptyFormHtml = document.getElementById('empty-form').innerHTML;
-            const newRowHtml = emptyFormHtml.replace(/__prefix__/g, formIdx);
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = newRowHtml;
-            const newRow = tempDiv.querySelector('tr');
-            tableBody.appendChild(newRow);
-            totalForms.value = parseInt(formIdx) + 1;
-        });
+document.addEventListener('DOMContentLoaded', function(){
 
-        tableBody.addEventListener('click', function(e) {
-            if (e.target.closest('.btn-remove')) {
-                const row = e.target.closest('tr');
-                const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
-                if (deleteCheckbox) {
-                    deleteCheckbox.checked = true;
-                    row.style.display = 'none';
-                } else {
-                    row.remove();
-                }
-            }
+    // ================= BUSCADOR CLIENTE =================
+    const buscarCliente = document.getElementById('buscarCliente');
+    const resultadosClientes = document.getElementById('resultadosClientes');
+
+    buscarCliente.addEventListener('input', function(){
+        const q = this.value;
+        if(q.length < 2){ resultadosClientes.innerHTML=''; return; }
+        fetch("{% url 'dashboard:buscar_clientes' %}?q="+q)
+        .then(res => res.json())
+        .then(data => {
+            resultadosClientes.innerHTML = '';
+            data.forEach(c => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item list-group-item-action';
+                li.textContent = `${c.nombre} - ${c.ci || c.nit}`;
+                li.dataset.nombre = c.nombre;
+                li.dataset.ci = c.ci;
+                li.dataset.nit = c.nit;
+                li.addEventListener('click', function(){
+                    document.getElementById('cliente_nombre').value = this.dataset.nombre;
+                    document.getElementById('cliente_ci').value = this.dataset.ci;
+                    document.getElementById('cliente_nit').value = this.dataset.nit;
+                    resultadosClientes.innerHTML = '';
+                    buscarCliente.value = '';
+                });
+                resultadosClientes.appendChild(li);
+            });
         });
     });
+
+    // ================= BUSCADOR PRODUCTOS =================
+    const buscarProducto = document.getElementById('buscarProducto');
+    const productosBody = document.getElementById('productosBody'); // tbody de productos
+    const paginacionProductos = document.getElementById('paginacionProductos');
+
+    let currentQuery = '';
+    let currentPage = 1;
+
+    function cargarProductos(query='', page=1){
+        fetch("{% url 'dashboard:buscar_productos_ajax' %}?q="+query+"&page="+page)
+        .then(res => res.json())
+        .then(data => {
+            productosBody.innerHTML = data.html;
+
+            // Paginación
+            let htmlPag = '';
+            for(let i=1; i<=data.num_pages; i++){
+                htmlPag += `<li class="page-item ${i===data.current_page?'active':''}">
+                                <a class="page-link" href="#" data-page="${i}">${i}</a>
+                            </li>`;
+            }
+            paginacionProductos.innerHTML = htmlPag;
+        });
+    }
+
+    buscarProducto.addEventListener('input', function(){
+        currentQuery = this.value;
+        currentPage = 1;
+        cargarProductos(currentQuery, currentPage);
+    });
+
+    paginacionProductos.addEventListener('click', function(e){
+        if(e.target.tagName === 'A'){
+            e.preventDefault();
+            currentPage = parseInt(e.target.dataset.page);
+            cargarProductos(currentQuery, currentPage);
+        }
+    });
+
+    cargarProductos(); // carga inicial
+
+    // ================= AGREGAR PRODUCTOS AL CARRITO =================
+    const tablaVenta = document.getElementById('tablaVenta').querySelector('tbody');
+    const totalCompra = document.getElementById('totalCompra');
+
+    function actualizarTotal(){
+        let total = 0;
+        tablaVenta.querySelectorAll('tr').forEach(r=>{
+            const cant = parseFloat(r.querySelector('.cant').value) || 0;
+            const precio = parseFloat(r.querySelector('.precio').value) || 0;
+            r.querySelector('.total').textContent = (cant*precio).toFixed(2);
+            total += cant*precio;
+        });
+        totalCompra.textContent = total.toFixed(2);
+    }
+
+    // Botón agregar desde la tabla de productos
+    document.getElementById('tablaProductos').addEventListener('click', function(e){
+        if(e.target.classList.contains('btn-add')){
+            const row = e.target.closest('tr');
+            const id = row.dataset.id;
+            const nombre = row.dataset.nombre;
+            const precio = parseFloat(row.dataset.precio);
+
+            // Evitar duplicados en el carrito
+            if([...tablaVenta.querySelectorAll('tr')].some(r=>r.dataset.id===id)) return;
+
+            const tr = document.createElement('tr');
+            tr.dataset.id = id;
+            tr.innerHTML = `
+                <td>${nombre}</td>
+                <td><input type="number" class="form-control cant" value="1" min="1"></td>
+                <td><input type="number" class="form-control precio" value="${precio.toFixed(2)}" step="0.01"></td>
+                <td class="total">${precio.toFixed(2)}</td>
+                <td><button class="btn btn-sm btn-danger btn-del">Eliminar</button></td>
+            `;
+            tablaVenta.appendChild(tr);
+            actualizarTotal();
+        }
+    });
+
+    tablaVenta.addEventListener('input', actualizarTotal);
+    tablaVenta.addEventListener('click', function(e){
+        if(e.target.classList.contains('btn-del')){
+            e.target.closest('tr').remove();
+            actualizarTotal();
+        }
+    });
+
+});
+
 </script>
+
 {% endblock %}

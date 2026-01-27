@@ -1,0 +1,12 @@
+{% for p in productos %}
+<tr data-id="{{ p.id }}" data-nombre="{{ p.nombre }}" data-precio="{{ p.precio_venta }}">
+    <td>{{ p.nombre }}</td>
+    <td>{{ p.codigo }}</td>
+    <td>{{ p.precio_venta }}</td>
+    <td><button class="btn btn-sm btn-success btn-add">Agregar</button></td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="4" class="text-center">No se encontraron productos</td>
+</tr>
+{% endfor %}
