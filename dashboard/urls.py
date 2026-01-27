@@ -44,6 +44,6 @@ urlpatterns = [
     # --- Direcciones para busqueda a tiempo real ---
     path('buscar/clientes/', views.buscar_clientes, name='buscar_clientes'),
     path('buscar_productos_ajax/', views.buscar_productos_ajax, name='buscar_productos_ajax'),
-    path('confirmar-venta/', views.confirmar_venta, name='confirmar_venta'),
-
+    path('confirmar_venta/', views.resumen_confirmar_venta, name='confirmar_venta'),
+    path('guardar_venta/', views.guardar_venta, name='guardar_venta'),
 ]

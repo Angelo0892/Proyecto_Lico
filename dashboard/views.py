@@ -381,76 +381,79 @@ def crear_venta(request):
     })
 
 @login_required
-def confirmar_venta(request):
-    if request.method == "POST":
+def guardar_venta(request):
+    if request.method != "POST":
+        return redirect("dashboard:crear_venta")
 
-        cliente = Cliente.objects.get(id=request.POST.get("cliente_id"))
-        usuario = request.user
-        total = Decimal(request.POST.get("total"))
-        observacion = request.POST.get("observacion", "")
-        estado = request.POST.get("estado")
-
-        # 1️⃣ Crear VENTA
-        venta = Venta.objects.create(
-            cliente=cliente,
-            usuario=usuario,
-            total=total,
-            observacion=observacion,
-            estado=estado
-        )
-
-        # 2️⃣ Crear DETALLE VENTA
-        productos = request.POST.getlist("producto_id[]")
-        cantidades = request.POST.getlist("cantidad[]")
-        precios = request.POST.getlist("precio[]")
-
-        for i in range(len(productos)):
-            producto = Producto.objects.get(id=productos[i])
-            cantidad = int(cantidades[i])
-            precio = Decimal(precios[i])
-            subtotal = cantidad * precio
-
-            DetalleVenta.objects.create(
-                venta=venta,
-                producto=producto,
-                cantidad=cantidad,
-                precio_unitario=precio,
-                subtotal=subtotal
-            )
-
-            # (Opcional) actualizar stock
-            producto.stock -= cantidad
-            producto.save()
-
-        # 3️⃣ Crear FACTURA
-        factura = Factura.objects.create(
-            venta=venta,
-            numero_factura=f"FAC-{venta.id:06d}",
-            nit_cliente=cliente.nit,
-            monto_total=total
-        )
-
-        # 4️⃣ Crear PAGO
-        metodo_pago = MetodoPago.objects.get(id=request.POST.get("metodo_pago"))
-
-        pago = Pago.objects.create(
-            factura=factura,
-            monto=total,
-            metodo_pago=metodo_pago,
-            referencia=request.POST.get("referencia")
-        )
-
-        # 5️⃣ DetallePago (opcional pero limpio)
-        DetallePago.objects.create(
-            pago=pago,
-            descripcion=f"Pago venta #{venta.id}",
-            monto=total
-        )
-
-        return redirect("dashboard:detalle_venta", venta.id)
-
-    # ================= GET (RESUMEN) =================
     cliente = Cliente.objects.get(id=request.POST.get("cliente_id"))
+    usuario = request.user
+    total = Decimal(request.POST.get("total"))
+
+    venta = Venta.objects.create(
+        cliente=cliente,
+        usuario=usuario,
+        total=total,
+        estado="PAGADO"
+    )
+
+    productos = request.POST.getlist("producto_id[]")
+    cantidades = request.POST.getlist("cantidad[]")
+    precios = request.POST.getlist("precio[]")
+
+    for i in range(len(productos)):
+        producto = Producto.objects.get(id=productos[i])
+        cantidad = int(cantidades[i])
+        precio = Decimal(precios[i])
+        subtotal = cantidad * precio
+
+        DetalleVenta.objects.create(
+            venta=venta,
+            producto=producto,
+            cantidad=cantidad,
+            precio_unitario=precio,
+            subtotal=subtotal
+        )
+
+        producto.stock_actual -= cantidad
+        producto.save()
+
+    factura = Factura.objects.create(
+        venta=venta,
+        numero_factura=f"FAC-{venta.id:06d}",
+        nit_cliente=cliente.nit,
+        monto_total=total
+    )
+
+    metodo_pago = MetodoPago.objects.filter(
+        id=request.POST.get("metodo_pago")
+    ).first()
+
+    if not metodo_pago:
+        return redirect("dashboard:crear_venta")
+
+    pago = Pago.objects.create(
+        factura=factura,
+        monto=total,
+        metodo_pago=metodo_pago,
+        referencia=request.POST.get("referencia")
+    )
+
+    DetallePago.objects.create(
+        pago=pago,
+        descripcion=f"Pago venta #{venta.id}",
+        monto=total
+    )
+
+    return redirect("dashboard:ventas")
+
+
+@login_required
+def resumen_confirmar_venta(request):
+    if request.method != "POST":
+        return redirect("dashboard:crear_venta")
+
+    cliente = Cliente.objects.get(id=request.POST.get("cliente_id"))
+
     productos = request.POST.getlist("producto_id[]")
     cantidades = request.POST.getlist("cantidad[]")
     precios = request.POST.getlist("precio[]")
@@ -467,6 +470,7 @@ def confirmar_venta(request):
 
         detalle.append({
             "producto": producto,
+            "producto_id": producto.id,
             "cantidad": cantidad,
             "precio": precio,
             "subtotal": subtotal
