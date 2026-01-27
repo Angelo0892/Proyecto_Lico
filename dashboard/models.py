@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.conf import settings
 
 # ==========================================
 # 1. CATALOGOS Y CONFIGURACIÓN
@@ -47,17 +48,22 @@ class Permiso(models.Model):
 # 2. ACTORES DEL SISTEMA
 # ==========================================
 class Usuario(models.Model):
-    # Si quieres usar el login de Django, podrías vincularlo con OneToOneField
-    # user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='perfil',
+        null=True,
+        blank=True
+    )
+
     nombre = models.CharField(max_length=50)
     apellido = models.CharField(max_length=50)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100) # En producción usar hash
     rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True)
     activo = models.BooleanField(default=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self): return f"{self.nombre} {self.apellido}"
+    def __str__(self):
+        return f"{self.nombre} {self.apellido}"
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=50)
@@ -155,7 +161,7 @@ class Venta(models.Model):
     ]
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     observacion = models.TextField(blank=True, null=True)
@@ -218,7 +224,7 @@ class DetalleDevolucion(models.Model):
     observacion = models.CharField(max_length=150, blank=True)
 
 class Auditoria(models.Model):
-    usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     accion = models.CharField(max_length=50) # Crear, Editar, Eliminar
     tabla = models.CharField(max_length=50) # En qué tabla ocurrió
     registro_id = models.IntegerField()

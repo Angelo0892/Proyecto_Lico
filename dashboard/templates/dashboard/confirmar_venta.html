@@ -1,0 +1,112 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="main-content">
+<div class="chart-card">
+
+<h4 class="mb-4">
+    <i class="bi bi-receipt text-success"></i> Confirmar Venta
+</h4>
+
+<form method="post">
+{% csrf_token %}
+
+<!-- ================= DATOS CLIENTE ================= -->
+<h5>Cliente</h5>
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Nombre</label>
+        <input type="text" class="form-control" value="{{ cliente.nombre }}" readonly>
+    </div>
+    <div class="col-md-4">
+        <label>CI</label>
+        <input type="text" class="form-control" value="{{ cliente.ci }}" readonly>
+    </div>
+    <div class="col-md-4">
+        <label>NIT</label>
+        <input type="text" class="form-control" value="{{ cliente.nit }}" readonly>
+    </div>
+</div>
+
+<input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+<input type="hidden" name="total" value="{{ total }}">
+
+<!-- ================= DETALLE VENTA ================= -->
+<h5>Detalle de Productos</h5>
+<table class="table table-bordered table-hover">
+<thead class="table-light">
+<tr>
+    <th>Producto</th>
+    <th>Cantidad</th>
+    <th>Precio</th>
+    <th>Subtotal</th>
+</tr>
+</thead>
+<tbody>
+{% for d in detalle %}
+<tr>
+    <td>{{ d.producto.nombre }}</td>
+    <td>{{ d.cantidad }}</td>
+    <td>{{ d.precio }}</td>
+    <td>{{ d.subtotal }}</td>
+</tr>
+
+<input type="hidden" name="producto_id[]" value="{{ d.producto.id }}">
+<input type="hidden" name="cantidad[]" value="{{ d.cantidad }}">
+<input type="hidden" name="precio[]" value="{{ d.precio }}">
+
+{% endfor %}
+</tbody>
+</table>
+
+<div class="text-end mb-4">
+    <h5>Total: Bs {{ total }}</h5>
+</div>
+
+<!-- ================= PAGO ================= -->
+<h5>Pago</h5>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label>Método de Pago</label>
+        <select name="metodo_pago" class="form-select" required>
+            <option value="">Seleccione</option>
+            {% for m in metodos_pago %}
+            <option value="{{ m.id }}">{{ m.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label>Referencia</label>
+        <input type="text" name="referencia" class="form-control"
+               placeholder="Nro recibo / transacción">
+    </div>
+
+    <div class="col-md-4">
+        <label>Estado Venta</label>
+        <select name="estado" class="form-select">
+            <option value="PAGADO">Pagado</option>
+            <option value="PENDIENTE">Pendiente</option>
+        </select>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label>Observación</label>
+    <textarea name="observacion" class="form-control" rows="3"></textarea>
+</div>
+
+<button class="btn btn-success">
+    <i class="bi bi-check-circle"></i> Confirmar Venta
+</button>
+
+<a href="{% url 'dashboard:ventas' %}" class="btn btn-secondary">
+    Cancelar
+</a>
+
+</form>
+
+</div>
+</div>
+{% endblock %}

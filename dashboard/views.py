@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from decimal import Decimal
 from django.template.loader import render_to_string
 
 # --- FORMULARIOS ---
@@ -23,7 +24,7 @@ from .forms import (
 from .models import (
     Venta, DetalleVenta, Producto, Cliente, Proveedor,
     Importacion, DetalleImportacion, Categoria, 
-    Factura, Usuario, Rol
+    Factura, Usuario, Rol, MetodoPago, Pago, DetallePago
 )
 
 @login_required
@@ -366,6 +367,7 @@ def crear_rol(request):
         form = RolForm()
     return render(request, 'dashboard/form_usuario.html', {'form': form, 'es_rol': True})
 
+# --- Funciones para la venta ---
 @login_required
 def crear_venta(request):
     """Vista principal para crear la venta"""
@@ -377,6 +379,106 @@ def crear_venta(request):
     return render(request, "dashboard/form_venta.html", {
         "productos": productos,
     })
+
+@login_required
+def confirmar_venta(request):
+    if request.method == "POST":
+
+        cliente = Cliente.objects.get(id=request.POST.get("cliente_id"))
+        usuario = request.user
+        total = Decimal(request.POST.get("total"))
+        observacion = request.POST.get("observacion", "")
+        estado = request.POST.get("estado")
+
+        # 1️⃣ Crear VENTA
+        venta = Venta.objects.create(
+            cliente=cliente,
+            usuario=usuario,
+            total=total,
+            observacion=observacion,
+            estado=estado
+        )
+
+        # 2️⃣ Crear DETALLE VENTA
+        productos = request.POST.getlist("producto_id[]")
+        cantidades = request.POST.getlist("cantidad[]")
+        precios = request.POST.getlist("precio[]")
+
+        for i in range(len(productos)):
+            producto = Producto.objects.get(id=productos[i])
+            cantidad = int(cantidades[i])
+            precio = Decimal(precios[i])
+            subtotal = cantidad * precio
+
+            DetalleVenta.objects.create(
+                venta=venta,
+                producto=producto,
+                cantidad=cantidad,
+                precio_unitario=precio,
+                subtotal=subtotal
+            )
+
+            # (Opcional) actualizar stock
+            producto.stock -= cantidad
+            producto.save()
+
+        # 3️⃣ Crear FACTURA
+        factura = Factura.objects.create(
+            venta=venta,
+            numero_factura=f"FAC-{venta.id:06d}",
+            nit_cliente=cliente.nit,
+            monto_total=total
+        )
+
+        # 4️⃣ Crear PAGO
+        metodo_pago = MetodoPago.objects.get(id=request.POST.get("metodo_pago"))
+
+        pago = Pago.objects.create(
+            factura=factura,
+            monto=total,
+            metodo_pago=metodo_pago,
+            referencia=request.POST.get("referencia")
+        )
+
+        # 5️⃣ DetallePago (opcional pero limpio)
+        DetallePago.objects.create(
+            pago=pago,
+            descripcion=f"Pago venta #{venta.id}",
+            monto=total
+        )
+
+        return redirect("dashboard:detalle_venta", venta.id)
+
+    # ================= GET (RESUMEN) =================
+    cliente = Cliente.objects.get(id=request.POST.get("cliente_id"))
+    productos = request.POST.getlist("producto_id[]")
+    cantidades = request.POST.getlist("cantidad[]")
+    precios = request.POST.getlist("precio[]")
+
+    detalle = []
+    total = Decimal("0")
+
+    for i in range(len(productos)):
+        producto = Producto.objects.get(id=productos[i])
+        cantidad = int(cantidades[i])
+        precio = Decimal(precios[i])
+        subtotal = cantidad * precio
+        total += subtotal
+
+        detalle.append({
+            "producto": producto,
+            "cantidad": cantidad,
+            "precio": precio,
+            "subtotal": subtotal
+        })
+
+    return render(request, "dashboard/confirmar_venta.html", {
+        "cliente": cliente,
+        "detalle": detalle,
+        "total": total,
+        "metodos_pago": MetodoPago.objects.all()
+    })
+
 
 # --- NUEVA FUNCIÓN PARA EDITAR ---
 @login_required

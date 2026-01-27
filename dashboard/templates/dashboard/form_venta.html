@@ -2,216 +2,236 @@
 
 {% block content %}
 <style>
-.main-content { margin-left: 250px; padding: 30px; background-color: #f0f2f5; min-height: 100vh; }
-.chart-card { background:white; border-radius:12px; padding:30px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
-.table-custom td, .table-custom th { vertical-align: middle; }
-@media (max-width:768px){ .main-content{margin-left:0;padding-top:70px;} }
+.main-content {
+    margin-left: 250px;
+    padding: 30px;
+    background-color: #f0f2f5;
+    min-height: 100vh;
+}
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.table-custom td, .table-custom th {
+    vertical-align: middle;
+}
+@media (max-width:768px){
+    .main-content{ margin-left:0; padding-top:70px; }
+}
 </style>
 
 <div class="main-content">
-    <div class="chart-card">
-        <h4 class="mb-4"><i class="bi bi-cart-check text-primary"></i> Crear Venta</h4>
+<div class="chart-card">
+<h4 class="mb-4"><i class="bi bi-cart-check text-primary"></i> Crear Venta</h4>
 
-        <!-- BUSCADOR CLIENTES -->
-        <h5>Cliente</h5>
-        <input type="text" id="buscarCliente" class="form-control mb-2" placeholder="Buscar cliente por nombre, CI o NIT">
-        <ul class="list-group mb-3" id="resultadosClientes"></ul>
+<form method="post" id="ventaForm" action="{% url 'dashboard:confirmar_venta' %}">
+{% csrf_token %}
 
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <label>Nombre</label>
-                <input type="text" id="cliente_nombre" class="form-control" readonly>
-            </div>
-            <div class="col-md-4">
-                <label>CI</label>
-                <input type="text" id="cliente_ci" class="form-control" readonly>
-            </div>
-            <div class="col-md-4">
-                <label>NIT</label>
-                <input type="text" id="cliente_nit" class="form-control" readonly>
-            </div>
-        </div>
+<!-- ================= CLIENTE ================= -->
+<h5>Cliente</h5>
+<input type="text" id="buscarCliente" class="form-control mb-2"
+       placeholder="Buscar cliente por nombre, CI o NIT">
+<ul class="list-group mb-3" id="resultadosClientes"></ul>
 
-        <!-- PRODUCTOS DISPONIBLES -->
-        <h5>Productos disponibles</h5>
-        <input type="text" id="buscarProducto" class="form-control mb-2" placeholder="Buscar productos">
-        <div class="table-responsive mb-3">
-            <table class="table table-bordered table-hover table-custom" id="tablaProductos">
-                <thead class="table-light">
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Código</th>
-                        <th>Precio</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="productosBody">
-                    {% for p in productos %}
-                    <tr data-id="{{ p.id }}" data-nombre="{{ p.nombre }}" data-precio="{{ p.precio_venta }}">
-                        <td>{{ p.nombre }}</td>
-                        <td>{{ p.codigo }}</td>
-                        <td>{{ p.precio_venta }}</td>
-                        <td><button class="btn btn-sm btn-success btn-add">Agregar</button></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <nav>
-                <ul class="pagination" id="paginacionProductos"></ul>
-            </nav>
-        </div>
-
-        
-
-        <!-- TABLA VENTA -->
-        <h5>Carrito de venta</h5>
-        <div class="table-responsive mb-3">
-            <table class="table table-bordered table-hover table-custom" id="tablaVenta">
-                <thead class="table-light">
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Total</th>
-                        <th>Eliminar</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="d-flex justify-content-end mb-4">
-            <h5>Total: Bs <span id="totalCompra">0.00</span></h5>
-        </div>
-
-        <button class="btn btn-primary">Guardar Venta</button>
+<div class="row mb-4">
+    <div class="col-md-4">
+        <label>Nombre</label>
+        <input type="text" id="cliente_nombre" class="form-control" readonly>
+    </div>
+    <div class="col-md-4">
+        <label>CI</label>
+        <input type="text" id="cliente_ci" class="form-control" readonly>
+    </div>
+    <div class="col-md-4">
+        <label>NIT</label>
+        <input type="text" id="cliente_nit" class="form-control" readonly>
     </div>
 </div>
 
+<input type="hidden" name="cliente_id" id="cliente_id">
+
+<!-- ================= PRODUCTOS ================= -->
+<h5>Productos disponibles</h5>
+<input type="text" id="buscarProducto" class="form-control mb-2"
+       placeholder="Buscar productos">
+
+<div class="table-responsive mb-3">
+    <table class="table table-bordered table-hover table-custom" id="tablaProductos">
+        <thead class="table-light">
+            <tr>
+                <th>Nombre</th>
+                <th>Código</th>
+                <th>Precio</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody id="productosBody"></tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination" id="paginacionProductos"></ul>
+    </nav>
+</div>
+
+<!-- ================= CARRITO ================= -->
+<h5>Carrito de venta</h5>
+<div class="table-responsive mb-3">
+    <table class="table table-bordered table-hover table-custom" id="tablaVenta">
+        <thead class="table-light">
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div class="d-flex justify-content-end mb-4">
+    <h5>Total: Bs <span id="totalCompra">0.00</span></h5>
+</div>
+
+<input type="hidden" name="total" id="totalHidden">
+
+<button class="btn btn-primary">Guardar Venta</button>
+</form>
+</div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', () => {
 
-    // ================= BUSCADOR CLIENTE =================
-    const buscarCliente = document.getElementById('buscarCliente');
-    const resultadosClientes = document.getElementById('resultadosClientes');
+/* ================= CLIENTES ================= */
+const buscarCliente = document.getElementById('buscarCliente');
+const resultadosClientes = document.getElementById('resultadosClientes');
 
-    buscarCliente.addEventListener('input', function(){
-        const q = this.value;
-        if(q.length < 2){ resultadosClientes.innerHTML=''; return; }
-        fetch("{% url 'dashboard:buscar_clientes' %}?q="+q)
-        .then(res => res.json())
-        .then(data => {
-            resultadosClientes.innerHTML = '';
-            data.forEach(c => {
-                const li = document.createElement('li');
-                li.className = 'list-group-item list-group-item-action';
-                li.textContent = `${c.nombre} - ${c.ci || c.nit}`;
-                li.dataset.nombre = c.nombre;
-                li.dataset.ci = c.ci;
-                li.dataset.nit = c.nit;
-                li.addEventListener('click', function(){
-                    document.getElementById('cliente_nombre').value = this.dataset.nombre;
-                    document.getElementById('cliente_ci').value = this.dataset.ci;
-                    document.getElementById('cliente_nit').value = this.dataset.nit;
-                    resultadosClientes.innerHTML = '';
-                    buscarCliente.value = '';
-                });
-                resultadosClientes.appendChild(li);
-            });
-        });
-    });
-
-    // ================= BUSCADOR PRODUCTOS =================
-    const buscarProducto = document.getElementById('buscarProducto');
-    const productosBody = document.getElementById('productosBody'); // tbody de productos
-    const paginacionProductos = document.getElementById('paginacionProductos');
-
-    let currentQuery = '';
-    let currentPage = 1;
-
-    function cargarProductos(query='', page=1){
-        fetch("{% url 'dashboard:buscar_productos_ajax' %}?q="+query+"&page="+page)
-        .then(res => res.json())
-        .then(data => {
-            productosBody.innerHTML = data.html;
-
-            // Paginación
-            let htmlPag = '';
-            for(let i=1; i<=data.num_pages; i++){
-                htmlPag += `<li class="page-item ${i===data.current_page?'active':''}">
-                                <a class="page-link" href="#" data-page="${i}">${i}</a>
-                            </li>`;
-            }
-            paginacionProductos.innerHTML = htmlPag;
-        });
+buscarCliente.addEventListener('input', () => {
+    if (buscarCliente.value.length < 2) {
+        resultadosClientes.innerHTML = '';
+        return;
     }
 
-    buscarProducto.addEventListener('input', function(){
-        currentQuery = this.value;
-        currentPage = 1;
-        cargarProductos(currentQuery, currentPage);
-    });
-
-    paginacionProductos.addEventListener('click', function(e){
-        if(e.target.tagName === 'A'){
-            e.preventDefault();
-            currentPage = parseInt(e.target.dataset.page);
-            cargarProductos(currentQuery, currentPage);
-        }
-    });
-
-    cargarProductos(); // carga inicial
-
-    // ================= AGREGAR PRODUCTOS AL CARRITO =================
-    const tablaVenta = document.getElementById('tablaVenta').querySelector('tbody');
-    const totalCompra = document.getElementById('totalCompra');
-
-    function actualizarTotal(){
-        let total = 0;
-        tablaVenta.querySelectorAll('tr').forEach(r=>{
-            const cant = parseFloat(r.querySelector('.cant').value) || 0;
-            const precio = parseFloat(r.querySelector('.precio').value) || 0;
-            r.querySelector('.total').textContent = (cant*precio).toFixed(2);
-            total += cant*precio;
+    fetch("{% url 'dashboard:buscar_clientes' %}?q=" + buscarCliente.value)
+    .then(res => res.json())
+    .then(data => {
+        resultadosClientes.innerHTML = '';
+        data.forEach(c => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item list-group-item-action';
+            li.textContent = `${c.nombre} - ${c.ci || c.nit}`;
+            li.onclick = () => {
+                cliente_nombre.value = c.nombre;
+                cliente_ci.value = c.ci;
+                cliente_nit.value = c.nit;
+                cliente_id.value = c.id;
+                resultadosClientes.innerHTML = '';
+                buscarCliente.value = '';
+            };
+            resultadosClientes.appendChild(li);
         });
-        totalCompra.textContent = total.toFixed(2);
-    }
-
-    // Botón agregar desde la tabla de productos
-    document.getElementById('tablaProductos').addEventListener('click', function(e){
-        if(e.target.classList.contains('btn-add')){
-            const row = e.target.closest('tr');
-            const id = row.dataset.id;
-            const nombre = row.dataset.nombre;
-            const precio = parseFloat(row.dataset.precio);
-
-            // Evitar duplicados en el carrito
-            if([...tablaVenta.querySelectorAll('tr')].some(r=>r.dataset.id===id)) return;
-
-            const tr = document.createElement('tr');
-            tr.dataset.id = id;
-            tr.innerHTML = `
-                <td>${nombre}</td>
-                <td><input type="number" class="form-control cant" value="1" min="1"></td>
-                <td><input type="number" class="form-control precio" value="${precio.toFixed(2)}" step="0.01"></td>
-                <td class="total">${precio.toFixed(2)}</td>
-                <td><button class="btn btn-sm btn-danger btn-del">Eliminar</button></td>
-            `;
-            tablaVenta.appendChild(tr);
-            actualizarTotal();
-        }
     });
-
-    tablaVenta.addEventListener('input', actualizarTotal);
-    tablaVenta.addEventListener('click', function(e){
-        if(e.target.classList.contains('btn-del')){
-            e.target.closest('tr').remove();
-            actualizarTotal();
-        }
-    });
-
 });
 
-</script>
+/* ================= PRODUCTOS AJAX ================= */
+const buscarProducto = document.getElementById('buscarProducto');
+const productosBody = document.getElementById('productosBody');
+const paginacionProductos = document.getElementById('paginacionProductos');
 
+let query = '', page = 1;
+
+function cargarProductos(){
+    fetch(`{% url 'dashboard:buscar_productos_ajax' %}?q=${query}&page=${page}`)
+    .then(res => res.json())
+    .then(data => {
+        productosBody.innerHTML = data.html;
+        paginacionProductos.innerHTML = '';
+        for(let i=1; i<=data.num_pages; i++){
+            paginacionProductos.innerHTML += `
+            <li class="page-item ${i===data.current_page?'active':''}">
+                <a href="#" class="page-link" data-p="${i}">${i}</a>
+            </li>`;
+        }
+    });
+}
+
+buscarProducto.addEventListener('input', () => {
+    query = buscarProducto.value;
+    page = 1;
+    cargarProductos();
+});
+
+paginacionProductos.onclick = e => {
+    if(e.target.dataset.p){
+        e.preventDefault();
+        page = e.target.dataset.p;
+        cargarProductos();
+    }
+};
+
+cargarProductos();
+
+/* ================= CARRITO ================= */
+const tablaVenta = document.querySelector('#tablaVenta tbody');
+const totalCompra = document.getElementById('totalCompra');
+
+function actualizarTotal(){
+    let total = 0;
+    tablaVenta.querySelectorAll('tr').forEach(r => {
+        const c = r.querySelector('.cant').value;
+        const p = r.querySelector('.precio').value;
+        const t = c * p;
+        r.querySelector('.total').textContent = t.toFixed(2);
+        total += t;
+    });
+    totalCompra.textContent = total.toFixed(2);
+}
+
+document.getElementById('tablaProductos').onclick = e => {
+    if(!e.target.classList.contains('btn-add')) return;
+
+    const tr = e.target.closest('tr');
+    const id = tr.dataset.id;
+
+    if([...tablaVenta.children].some(r => r.dataset.id === id)) return;
+
+    tablaVenta.insertAdjacentHTML('beforeend', `
+    <tr data-id="${id}">
+        <td>${tr.dataset.nombre}</td>
+        <td><input type="number" class="form-control cant" value="1" min="1"></td>
+        <td><input type="number" class="form-control precio" value="${tr.dataset.precio}" step="0.01"></td>
+        <td class="total">${tr.dataset.precio}</td>
+        <td><button type="button" class="btn btn-sm btn-danger">✕</button></td>
+    </tr>
+    `);
+    actualizarTotal();
+};
+
+tablaVenta.oninput = actualizarTotal;
+
+tablaVenta.onclick = e => {
+    if(e.target.tagName === 'BUTTON'){
+        e.target.closest('tr').remove();
+        actualizarTotal();
+    }
+};
+
+/* ================= SUBMIT ================= */
+document.getElementById('ventaForm').addEventListener('submit', function(){
+    totalHidden.value = totalCompra.textContent;
+    tablaVenta.querySelectorAll('tr').forEach(r => {
+        this.insertAdjacentHTML('beforeend', `
+        <input type="hidden" name="producto_id[]" value="${r.dataset.id}">
+        <input type="hidden" name="cantidad[]" value="${r.querySelector('.cant').value}">
+        <input type="hidden" name="precio[]" value="${r.querySelector('.precio').value}">
+        `);
+    });
+});
+
+});
+</script>
 {% endblock %}
