@@ -33,6 +33,7 @@ class MetodoPago(models.Model):
 class Rol(models.Model):
     nombre = models.CharField(max_length=30)
     descripcion = models.CharField(max_length=100, blank=True, null=True)
+    permisos = models.ManyToManyField('Permiso', blank=True)
 
     class Meta:
         verbose_name_plural = "Roles"
