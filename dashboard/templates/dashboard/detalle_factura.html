@@ -1,65 +1,119 @@
 {% extends "dashboard/base.html" %}
 
 {% block content %}
+<style>
+    .contenido-ajustado {
+        margin-left: 250px;
+        padding: 40px;
+        width: calc(100% - 250px);
+    }
+    @media (max-width: 768px) {
+        .contenido-ajustado {
+            margin-left: 0;
+            width: 100%;
+            padding-top: 60px;
+        }
+    }
+    .form-card {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .table-custom td, .table-custom th { vertical-align: middle; }
+    .badge-emitida { background-color: #d1e7dd; color: #0f5132; padding: 5px 10px; border-radius: 6px; font-weight: 600; }
+    .badge-anulada { background-color: #f8d7da; color: #842029; padding: 5px 10px; border-radius: 6px; font-weight: 600; }
+</style>
+
 <div class="contenido-ajustado">
-    <div class="card-factura">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4>Factura #{{ factura.numero_factura }}</h4>
-            <a href="{% url 'dashboard:factura_pdf' factura.id %}" class="btn btn-danger">
-                <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
-            </a>
+    <div class="form-card">
+        <div class="card-header bg-primary text-white p-3 rounded-top d-flex align-items-center justify-content-between">
+            <div>
+                <i class="bi bi-receipt fs-4 me-2"></i>
+                <h4 class="m-0">Detalle Factura #{{ factura.numero_factura }}</h4>
+            </div>
         </div>
 
-        <p><strong>Fecha:</strong> {{ factura.fecha_emision }}</p>
-        <p><strong>Cliente:</strong> {{ factura.venta.cliente.nombre }} {{ factura.venta.cliente.apellido1 }}</p>
-        <p><strong>NIT:</strong> {{ factura.nit_cliente }}</p>
-        
-        <!-- Formulario para cambiar estado -->
-        <form method="post" class="mb-3">
-            {% csrf_token %}
-            <label class="fw-bold">Estado:</label>
-            <select name="estado" class="form-select w-auto d-inline-block">
-                <option value="True" {% if factura.estado %}selected{% endif %}>Válida</option>
-                <option value="False" {% if not factura.estado %}selected{% endif %}>No válida</option>
-            </select>
-            <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
-        </form>
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                <h6 class="text-primary mb-3">Datos de la Factura</h6>
 
-        <hr>
+                <div class="mb-3">
+                    <label>Cliente</label>
+                    <input type="text" class="form-control" value="{{ factura.venta.cliente.nombre }} {{ factura.venta.cliente.apellido1 }}" readonly>
+                </div>
+                <div class="mb-3">
+                    <label>NIT / CI</label>
+                    <input type="text" class="form-control" value="{{ factura.nit_cliente }}" readonly>
+                </div>
+                <div class="mb-3">
+                    <label>Fecha Emisión</label>
+                    <input type="text" class="form-control" value="{{ factura.fecha_emision|date:'d/m/Y H:i' }}" readonly>
+                </div>
 
-        <h5>Productos</h5>
-        <table class="table table-bordered table-hover table-custom">
-            <thead class="table-light">
-                <tr>
-                    <th>Producto</th>
-                    <th class="text-center">Cantidad</th>
-                    <th class="text-end">Precio Unitario</th>
-                    <th class="text-end">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in factura.venta.detalleventa_set.all %}
-                <tr>
-                    <td>{{ item.producto.nombre }}</td>
-                    <td class="text-center">{{ item.cantidad }}</td>
-                    <td class="text-end">Bs {{ item.precio_unitario }}</td>
-                    <td class="text-end">Bs {{ item.subtotal }}</td>
-                </tr>
+                <hr>
+                <h6 class="text-primary mb-3">Productos</h6>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-hover table-custom">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio Unitario</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in factura.venta.detalleventa_set.all %}
+                            <tr>
+                                <td>{{ item.producto.nombre }}</td>
+                                <td class="text-center">{{ item.cantidad }}</td>
+                                <td class="text-end">Bs {{ item.precio_unitario }}</td>
+                                <td class="text-end">Bs {{ item.subtotal }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mb-3 text-end">
+                    <h5>Total: Bs {{ factura.monto_total }}</h5>
+                </div>
+
+                <hr>
+                <h6 class="text-primary mb-3">Pago</h6>
+                {% for pago in factura.pago_set.all %}
+                    <div class="mb-2">
+                        <label>Método de Pago</label>
+                        <input type="text" class="form-control" value="{{ pago.metodo_pago.nombre }}" readonly>
+                    </div>
+                    <div class="mb-2">
+                        <label>Referencia</label>
+                        <input type="text" class="form-control" value="{{ pago.referencia|default:'---' }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label>Monto</label>
+                        <input type="text" class="form-control" value="Bs {{ pago.monto }}" readonly>
+                    </div>
                 {% endfor %}
-            </tbody>
-        </table>
 
-        <div class="d-flex justify-content-end mb-3">
-            <h5>Total: Bs {{ factura.monto_total }}</h5>
+                <hr>
+                <h6 class="text-primary mb-3">Estado de Factura</h6>
+                <div class="mb-3">
+                    <select name="estado" class="form-select">
+                        <option value="True" {% if factura.estado %}selected{% endif %}>Válida</option>
+                        <option value="False" {% if not factura.estado %}selected{% endif %}>No válida</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a href="{% url 'dashboard:facturacion' %}" class="btn btn-outline-secondary">Volver</a>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
         </div>
-
-        <hr>
-
-        <h5>Pagos</h5>
-        {% for pago in factura.pago_set.all %}
-            <p><strong>Método:</strong> {{ pago.metodo_pago.nombre }} | <strong>Referencia:</strong> {{ pago.referencia|default:"---" }} | <strong>Monto:</strong> Bs {{ pago.monto }}</p>
-        {% endfor %}
-
     </div>
 </div>
 {% endblock %}

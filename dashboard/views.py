@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from decimal import Decimal
 from django.template.loader import render_to_string
 from django.contrib import messages
-from weasyprint import HTML
+#from weasyprint import HTML
 from django.http import HttpResponse
 
 # --- FORMULARIOS ---
@@ -560,7 +560,7 @@ def detalle_factura(request, pk):
         factura.estado = nuevo_estado
         factura.save()
         messages.success(request, f"Estado de la factura #{factura.numero_factura} actualizado.")
-        return redirect("dashboard:detalle_factura", pk=factura.id)
+        return redirect("dashboard:facturacion")
 
     return render(request, "dashboard/detalle_factura.html", {"factura": factura})
 
