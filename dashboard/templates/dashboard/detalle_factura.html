@@ -1,0 +1,65 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="contenido-ajustado">
+    <div class="card-factura">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4>Factura #{{ factura.numero_factura }}</h4>
+            <a href="{% url 'dashboard:factura_pdf' factura.id %}" class="btn btn-danger">
+                <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+            </a>
+        </div>
+
+        <p><strong>Fecha:</strong> {{ factura.fecha_emision }}</p>
+        <p><strong>Cliente:</strong> {{ factura.venta.cliente.nombre }} {{ factura.venta.cliente.apellido1 }}</p>
+        <p><strong>NIT:</strong> {{ factura.nit_cliente }}</p>
+        
+        <!-- Formulario para cambiar estado -->
+        <form method="post" class="mb-3">
+            {% csrf_token %}
+            <label class="fw-bold">Estado:</label>
+            <select name="estado" class="form-select w-auto d-inline-block">
+                <option value="True" {% if factura.estado %}selected{% endif %}>Válida</option>
+                <option value="False" {% if not factura.estado %}selected{% endif %}>No válida</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+        </form>
+
+        <hr>
+
+        <h5>Productos</h5>
+        <table class="table table-bordered table-hover table-custom">
+            <thead class="table-light">
+                <tr>
+                    <th>Producto</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-end">Precio Unitario</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in factura.venta.detalleventa_set.all %}
+                <tr>
+                    <td>{{ item.producto.nombre }}</td>
+                    <td class="text-center">{{ item.cantidad }}</td>
+                    <td class="text-end">Bs {{ item.precio_unitario }}</td>
+                    <td class="text-end">Bs {{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-end mb-3">
+            <h5>Total: Bs {{ factura.monto_total }}</h5>
+        </div>
+
+        <hr>
+
+        <h5>Pagos</h5>
+        {% for pago in factura.pago_set.all %}
+            <p><strong>Método:</strong> {{ pago.metodo_pago.nombre }} | <strong>Referencia:</strong> {{ pago.referencia|default:"---" }} | <strong>Monto:</strong> Bs {{ pago.monto }}</p>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

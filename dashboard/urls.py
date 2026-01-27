@@ -18,11 +18,15 @@ urlpatterns = [
     path('productos/', views.lista_productos, name='productos'),
     path('categorias/', views.lista_categorias, name='categorias'),
 
-    path('crear/usuario/', views.crear_usuario, name='crear_usuario'),
-    path('crear/rol/', views.crear_rol, name='crear_rol'),
+    # --- Facturacion ---
+    path('factura/<int:pk>/', views.detalle_factura, name='detalle_factura'),
+    path('factura/<int:pk>/pdf/', views.factura_pdf, name='factura_pdf'),
+
     
     # --- FORMULARIOS DE CREACIÓN ---
     path('crear/cliente/', views.crear_cliente, name='crear_cliente'),
+    path('crear/usuario/', views.crear_usuario, name='crear_usuario'),
+    path('crear/rol/', views.crear_rol, name='crear_rol'),
     path('crear/producto/', views.crear_producto, name='crear_producto'),
     path('crear/importacion/', views.crear_importacion, name='crear_importacion'),
     path('crear/proveedor/', views.crear_proveedor, name='crear_proveedor'),

@@ -11,6 +11,9 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from decimal import Decimal
 from django.template.loader import render_to_string
+from django.contrib import messages
+from weasyprint import HTML
+from django.http import HttpResponse
 
 # --- FORMULARIOS ---
 from .forms import (
@@ -541,6 +544,40 @@ def editar_venta(request, pk):
         'formset': formset,
         'titulo': f'Editar Venta #{venta.id}'
     })
+
+# --- Vista facturas ---
+
+@login_required
+def detalle_factura(request, pk):
+    """
+    Muestra la factura en detalle y permite actualizar su estado (válida o no).
+    """
+    factura = get_object_or_404(Factura, pk=pk)
+
+    if request.method == "POST":
+        # Cambiar estado de la factura
+        nuevo_estado = request.POST.get("estado") == "True"
+        factura.estado = nuevo_estado
+        factura.save()
+        messages.success(request, f"Estado de la factura #{factura.numero_factura} actualizado.")
+        return redirect("dashboard:detalle_factura", pk=factura.id)
+
+    return render(request, "dashboard/detalle_factura.html", {"factura": factura})
+
+
+@login_required
+def factura_pdf(request, pk):
+    """
+    Genera la factura en PDF y permite descargarla.
+    """
+    factura = get_object_or_404(Factura, pk=pk)
+    html_string = render_to_string("dashboard/factura_pdf.html", {"factura": factura})
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=factura_{factura.numero_factura}.pdf'
+    return response
 
 # --- VISTAS DE LISTADOS (Tablas) ---
 

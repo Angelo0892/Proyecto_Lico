@@ -119,12 +119,15 @@
                             {% endif %}
                         </td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-light border text-danger" title="Descargar PDF">
+                            <!-- Descargar PDF -->
+                            <a href="{% url 'dashboard:factura_pdf' f.id %}" class="btn btn-sm btn-light border text-danger" title="Descargar PDF">
                                 <i class="bi bi-file-earmark-pdf"></i>
-                            </button>
-                            <button class="btn btn-sm btn-light border text-primary" title="Ver Detalle">
+                            </a>
+
+                            <!-- Ver Detalle -->
+                            <a href="{% url 'dashboard:detalle_factura' f.id %}" class="btn btn-sm btn-light border text-primary" title="Ver Detalle">
                                 <i class="bi bi-eye"></i>
-                            </button>
+                            </a>
                         </td>
                     </tr>
                     {% empty %}
