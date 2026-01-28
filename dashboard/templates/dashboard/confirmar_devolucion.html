@@ -1,0 +1,105 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+
+<style>
+    .contenido-ajustado {
+        margin-left: 250px;
+        padding: 40px;
+        width: calc(100% - 250px);
+        background-color: #f4f6f9;
+        min-height: 100vh;
+    }
+
+    @media (max-width: 768px) {
+        .contenido-ajustado {
+            margin-left: 0;
+            width: 100%;
+            padding-top: 60px;
+        }
+    }
+
+    .confirm-card {
+        max-width: 700px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 14px rgba(0,0,0,.1);
+        overflow: hidden;
+    }
+
+    .confirm-card .card-header {
+        padding: 16px 20px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .confirm-card .card-body {
+        padding: 30px;
+    }
+
+    .confirm-card p {
+        font-size: .95rem;
+        color: #555;
+    }
+
+    .list-group-item {
+        font-size: .9rem;
+        border-color: #eee;
+    }
+
+    textarea.form-control {
+        resize: none;
+    }
+
+    .btn-danger {
+        box-shadow: 0 4px 10px rgba(220,53,69,.3);
+    }
+
+    .btn-secondary {
+        box-shadow: 0 4px 10px rgba(108,117,125,.3);
+    }
+</style>
+
+<div class="contenido-ajustado">
+    <div class="container pt-4">
+        <div class="card shadow-lg border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Confirmar Devolución</h5>
+            </div>
+
+            <div class="card-body">
+                <p>
+                    ¿Estás seguro de devolver la siguiente venta?
+                </p>
+
+                <ul class="list-group mb-3">
+                    <li class="list-group-item"><strong>Factura:</strong> #{{ venta.id }}</li>
+                    <li class="list-group-item"><strong>Cliente:</strong> {{ venta.cliente }}</li>
+                    <li class="list-group-item"><strong>Total:</strong> ${{ venta.total }}</li>
+                </ul>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Motivo de la devolución</label>
+                        <textarea name="motivo" class="form-control" required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard:ventas' %}" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            Confirmar Devolución
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

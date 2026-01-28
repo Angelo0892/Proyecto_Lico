@@ -110,7 +110,13 @@
                                             <a href="{% url 'dashboard:editar_venta' venta.id %}" class="btn btn-sm btn-outline-primary border-0" title="Editar Venta">
                                                 <i class="bi bi-pencil-square fs-5"></i>
                                             </a>
+                                            <a href="{% url 'dashboard:crear_devolucion' venta.id %}"
+                                                class="btn btn-sm btn-outline-danger border-0"
+                                                title="Devolver venta">
+                                                <i class="bi bi-arrow-counterclockwise fs-5"></i>
+                                            </a>
                                         </td>
+
                                     </tr>
                                     {% empty %}
                                     <tr>

@@ -17,6 +17,7 @@ urlpatterns = [
     path('usuarios/', views.lista_usuarios, name='usuarios'),          # Tablas Usuarios/Roles
     path('productos/', views.lista_productos, name='productos'),
     path('categorias/', views.lista_categorias, name='categorias'),
+    path('devoluciones/', views.lista_devoluciones, name='devoluciones'),
 
     # --- Facturacion ---
     path('factura/<int:pk>/', views.detalle_factura, name='detalle_factura'),
@@ -46,6 +47,8 @@ urlpatterns = [
     path('eliminar/cliente/<int:pk>/', views.eliminar_cliente, name='eliminar_cliente'),
     path('eliminar/producto/<int:pk>/', views.eliminar_producto, name='eliminar_producto'),
     path('eliminar/importacion/<int:pk>/', views.eliminar_importacion, name='eliminar_importacion'),
+    path('venta/<int:venta_id>/devolucion/', views.crear_devolucion, name='crear_devolucion'),
+
 
     
     # --- Direcciones para busqueda a tiempo real ---

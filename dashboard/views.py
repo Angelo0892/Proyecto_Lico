@@ -24,14 +24,14 @@ from .forms import (
     ClienteForm, ProductoForm, ImportacionForm, 
     ProveedorForm, UsuarioForm, RolForm, 
     VentaForm, DetalleVentaForm,
-    CategoriaForm
+    CategoriaForm,
 )
 
 # --- MODELOS ---
 from .models import (
     Venta, DetalleVenta, Producto, Cliente, Proveedor,
     Importacion, DetalleImportacion, Categoria, 
-    Factura, Usuario, Rol, MetodoPago, Pago, DetallePago
+    Factura, Usuario, Rol, MetodoPago, Pago, DetallePago, Devolucion
 )
 
 @login_required
@@ -657,6 +657,32 @@ def resumen_confirmar_venta(request):
         "metodos_pago": MetodoPago.objects.all()
     })
 
+@login_required
+@permiso_requerido('modulo_ventas')
+def crear_devolucion(request, venta_id):
+    venta = get_object_or_404(Venta, id=venta_id)
+    factura = get_object_or_404(Factura, venta=venta_id)
+
+    if request.method == 'POST':
+        motivo = request.POST.get('motivo')
+
+        Devolucion.objects.create(
+            venta=venta,
+            motivo=motivo,
+            total_reembolsado=venta.total,
+            estado='PROCESADA'
+        )
+
+        factura.estado = False
+        venta.estado = 'CANCELADO'
+        venta.save()
+        factura.save()
+
+        return redirect('dashboard:devoluciones')
+
+    return render(request, 'dashboard/confirmar_devolucion.html', {
+        'venta': venta
+    })
 
 # --- NUEVA FUNCIÓN PARA EDITAR ---
 @login_required
@@ -941,6 +967,23 @@ def lista_categorias(request):
     }
 
     return render(request, 'dashboard/lista_categorias.html', context)
+
+@login_required
+@permiso_requerido('modulo_ventas')
+def lista_devoluciones(request):
+    devoluciones = Devolucion.objects.select_related('venta', 'venta__cliente')
+
+    total_reembolsado = devoluciones.aggregate(
+        total=Sum('total_reembolsado')
+    )['total'] or 0
+
+    context = {
+        'devoluciones': devoluciones,
+        'total_reembolsado': total_reembolsado,
+        'cantidad_devoluciones': devoluciones.count()
+    }
+    return render(request, 'dashboard/lista_devoluciones.html', context)
+
 
 @login_required
 @permiso_requerido('modulo_clientes')

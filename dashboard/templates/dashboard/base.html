@@ -93,6 +93,14 @@
             </li>
             {% endif %}
 
+            {% if request.user|tiene_permiso:"modulo_ventas" %}
+            <li class="nav-item">
+                <a href="{% url 'dashboard:devoluciones' %}" class="nav-link {% if request.resolver_match.url_name == 'ventas' %}active{% endif %}">
+                    <i class="bi bi-cart3"></i> Devoluciones
+                </a>
+            </li>
+            {% endif %}
+
             {% if request.user|tiene_permiso:"modulo_inventario" %}
             <li class="nav-item">
                 <a href="{% url 'dashboard:inventario' %}" class="nav-link {% if request.resolver_match.url_name == 'inventario' %}active{% endif %}">

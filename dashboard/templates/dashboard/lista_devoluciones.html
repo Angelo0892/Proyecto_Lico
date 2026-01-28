@@ -1,0 +1,174 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+
+<style>
+    .contenido-ajustado {
+        margin-left: 250px;
+        padding: 30px;
+        background-color: #f0f2f5;
+        min-height: 100vh;
+    }
+
+    .page-title {
+        font-weight: 700;
+        color: #333;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    /* Cards resumen */
+    .summary-card {
+        border-radius: 14px;
+        overflow: hidden;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    }
+
+    .summary-card h3 {
+        font-weight: 700;
+        margin: 0;
+    }
+
+    /* Card principal */
+    .data-card {
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        border: none;
+    }
+
+    .data-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #eee;
+        font-weight: 700;
+    }
+
+    /* Tabla */
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        font-size: .85rem;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: #666;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fc;
+    }
+
+    .table td {
+        vertical-align: middle;
+        font-size: .9rem;
+    }
+
+    /* Badges */
+    .badge-danger-custom {
+        background-color: #e74a3b;
+        font-size: .75rem;
+        padding: 6px 10px;
+        border-radius: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .contenido-ajustado {
+            margin-left: 0;
+            padding-top: 80px;
+        }
+    }
+</style>
+
+<div class="contenido-ajustado">
+    <div class="container-fluid">
+
+        <div class="d-flex justify-content-between mb-4">
+            <h1 class="h3 page-title">Gestión de Devoluciones</h1>
+        </div>
+
+        <!-- Resumen -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card summary-card border-danger text-center shadow-sm">
+                    <div class="card-header bg-danger text-white fw-bold">
+                        Total Reembolsado
+                    </div>
+                    <div class="card-body">
+                        <h3>${{ total_reembolsado|floatformat:2 }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="card summary-card border-secondary text-center shadow-sm">
+                    <div class="card-header bg-secondary text-white fw-bold">
+                        Cantidad de Devoluciones
+                    </div>
+                    <div class="card-body">
+                        <h3>{{ cantidad_devoluciones }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card data-card">
+            <div class="card-header text-danger">
+                Listado de Devoluciones
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th># Venta</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Motivo</th>
+                                <th class="text-end">Monto</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in devoluciones %}
+                            <tr>
+                                <td>#{{ d.venta.id }}</td>
+                                <td>
+                                    {{ d.venta.cliente.nombre }}
+                                    {{ d.venta.cliente.apellido1 }}
+                                </td>
+                                <td>{{ d.fecha|date:"d/m/Y H:i" }}</td>
+                                <td>{{ d.motivo|truncatechars:40 }}</td>
+                                <td class="text-end">
+                                    ${{ d.total_reembolsado|floatformat:2 }}
+                                </td>
+                                <td>
+                                    <span class="badge badge-danger-custom">
+                                        {{ d.estado }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    No hay devoluciones registradas
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
