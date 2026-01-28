@@ -65,16 +65,26 @@ class ProveedorForm(forms.ModelForm):
             'pais': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
-class UsuarioForm(forms.ModelForm):
-    class Meta:
-        model = Usuario
-        fields = ['nombre', 'apellido', 'rol', 'activo']
-        widgets = {
-            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
-            'apellido': forms.TextInput(attrs={'class': 'form-control'}),
-            'rol': forms.Select(attrs={'class': 'form-select'}),
-            'activo': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }
+class UsuarioForm(forms.Form):
+    username = forms.CharField(label="Usuario", max_length=150)
+    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput)
+    email = forms.EmailField(label="Correo", required=False)
+
+    nombre = forms.CharField(label="Nombre")
+    apellido = forms.CharField(label="Apellido")
+    rol = forms.ModelChoiceField(
+        queryset=Rol.objects.all(),
+        required=False,
+        empty_label="Sin rol"
+    )
+
+    es_superusuario = forms.BooleanField(
+        label="Superusuario",
+        required=False,
+        help_text="Acceso total al sistema"
+    )
+
+    activo = forms.BooleanField(label="Activo", required=False, initial=True)
 
 class RolForm(forms.ModelForm):
     class Meta:

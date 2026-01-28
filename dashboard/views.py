@@ -1,6 +1,6 @@
 import pdfkit
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Sum, Count, F
 from django.db.models.functions import TruncDate
 from django.utils import timezone
@@ -15,6 +15,8 @@ from django.template.loader import render_to_string
 from django.contrib import messages
 from django.http import HttpResponse
 from django.db import transaction
+from django.contrib.auth.models import User
+
 from .decorators import permiso_requerido
 
 # --- FORMULARIOS ---
@@ -486,15 +488,43 @@ def eliminar_proveedor(request, pk):
 # --- Vistas de usuarios ---
 @login_required
 @permiso_requerido('modulo_usuarios')
+@user_passes_test(lambda u: u.is_superuser)
 def crear_usuario(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
+
         if form.is_valid():
-            form.save()
+            # 1. Crear usuario Django
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password'],
+                email=form.cleaned_data['email']
+            )
+
+            if form.cleaned_data['es_superusuario']:
+                user.is_staff = True
+                user.is_superuser = True
+                user.save()
+
+            # 2. Crear perfil Usuario
+            Usuario.objects.create(
+                user=user,
+                nombre=form.cleaned_data['nombre'],
+                apellido=form.cleaned_data['apellido'],
+                rol=form.cleaned_data['rol'],
+                activo=form.cleaned_data['activo']
+            )
+
+            messages.success(request, "Usuario creado correctamente")
             return redirect('dashboard:usuarios')
+
     else:
         form = UsuarioForm()
-    return render(request, 'dashboard/form_usuario.html', {'form': form})
+
+    return render(request, 'dashboard/form_usuario.html', {
+        'form': form,
+        'es_rol': False
+    })
 
 @login_required
 @permiso_requerido('modulo_usuarios')
@@ -836,8 +866,23 @@ def lista_facturas(request):
 @login_required
 @permiso_requerido('modulo_usuarios')
 def lista_usuarios(request):
+
+    search = request.GET.get ('search', '')
+
+    usuarios = Usuario.objects.select_related('user', 'rol').all()
+
+    if search:
+        usuarios = usuarios.filter(
+            Q(nombre__icontains=search) |
+            Q(apellido__icontains=search) |
+            Q(rol__nombre__icontains=search)
+        )
+
+    paginacion = Paginator(usuarios, 10)
+    numero_pagina = request.GET.get('page')
+    usuarios = paginacion.get_page(numero_pagina)
+
     # Traemos usuarios y roles
-    usuarios = Usuario.objects.select_related('rol').all()
     roles = Rol.objects.all()
     
     context = {
