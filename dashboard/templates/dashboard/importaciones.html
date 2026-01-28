@@ -55,6 +55,23 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
+
+                    <!-- Buscador -->
+                    <form method="get" class="mb-3">
+                        <div class="input-group">
+                            <input
+                                type="text"
+                                name="search"
+                                class="form-control"
+                                placeholder="Buscar por nombre ..."
+                                value="{{ search }}"
+                            >
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
@@ -117,7 +134,6 @@
                                             RECIBIDO
                                         </span>
                                         {% endif %}
-
                                     </div>
                                 </td>
                             </tr>
@@ -131,6 +147,46 @@
                             {% endfor %}
                         </tbody>
                     </table>
+
+                    <!-- Paginación -->
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+
+                            {% if importaciones.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                    href="?page={{ importaciones.previous_page_number }}&search={{ search }}">
+                                        Anterior
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in importaciones.paginator.page_range %}
+                                {% if importaciones.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > importaciones.number|add:'-3' and num < importaciones.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                        href="?page={{ num }}&search={{ search }}">
+                                            {{ num }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if importaciones.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                    href="?page={{ importaciones.next_page_number }}&search={{ search }}">
+                                        Siguiente
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>

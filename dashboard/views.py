@@ -118,6 +118,8 @@ def dashboard_ventas(request):
     if isinstance(fecha_fin, str):
         fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
 
+    search = request.GET.get ('search', '')
+
     ventas = Venta.objects.filter(
         fecha__date__gte=fecha_inicio,
         fecha__date__lte=fecha_fin
@@ -152,13 +154,27 @@ def dashboard_ventas(request):
 @permiso_requerido('modulo_inventario')
 def dashboard_inventario(request):
     """ Vista de Inventario """
+    search = request.GET.get ('search', '')
+
     productos = Producto.objects.filter(activo=True).select_related('categoria', 'proveedor')
+    lista_productos = Producto.objects.filter(activo=True).select_related('categoria', 'proveedor')
+
+    if search:
+        productos = productos.filter(
+            Q(nombre__icontains=search) |
+            Q(categoria__nombre__icontains=search) |
+            Q(codigo__icontains=search)
+        )
+
+    paginacion = Paginator(productos, 10)
+    numero_pagina = request.GET.get('page')
+    productos = paginacion.get_page(numero_pagina)
     
-    valor_inventario = productos.aggregate(
+    valor_inventario = lista_productos.aggregate(
         valor=Sum(F('stock_actual') * F('precio_compra'))
     )['valor'] or 0
     
-    por_categoria = productos.values('categoria__nombre').annotate(
+    por_categoria = lista_productos.values('categoria__nombre').annotate(
         cantidad=Count('id'),
         stock=Sum('stock_actual')
     ).order_by('-stock')
@@ -171,12 +187,36 @@ def dashboard_inventario(request):
     return render(request, 'dashboard/inventario.html', context)
 
 @login_required
+@permiso_requerido('modulo_inventario')
+def eliminar_producto(request, pk):
+    producto = get_object_or_404(Producto, pk = pk)
+
+    if request.method == "POST":
+        producto.delete()
+    
+    return redirect("dashboard:inventario")
+
+@login_required
 @permiso_requerido('modulo_importacion')
 def dashboard_importaciones(request):
     """ Vista de Importaciones """
+    search = request.GET.get ('search', '')
+
     importaciones = Importacion.objects.all().order_by('-fecha_pedido')
+    lista_importaciones = Importacion.objects.all().order_by('-fecha_pedido')
+
+    if search:
+        importaciones = importaciones.filter(
+            Q(proveedor__nombre__icontains=search) |
+            Q(fecha_pedido__icontains=search) 
+        )
+
+    paginacion = Paginator(importaciones, 10)
+    numero_pagina = request.GET.get('page')
+    importaciones = paginacion.get_page(numero_pagina)
+
     
-    por_estado = importaciones.values('estado').annotate(
+    por_estado = lista_importaciones.values('estado').annotate(
         cantidad=Count('id'),
         total=Sum('total')
     )
@@ -186,6 +226,16 @@ def dashboard_importaciones(request):
         'por_estado': por_estado
     }
     return render(request, 'dashboard/importaciones.html', context)
+
+@login_required
+@permiso_requerido('modulo_importacion')
+def eliminar_importacion(request, pk):
+    importacion = get_object_or_404(Importacion, pk)
+
+    if request.method == 'POST':
+        importacion.delete()
+    
+    return redirect('dashboard:importaciones')
 
 # --- VISTAS DE Clientes ---
 

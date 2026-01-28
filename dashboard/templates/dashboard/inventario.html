@@ -93,6 +93,22 @@
 
     <div class="chart-card">
         <div class="table-responsive">
+
+            <form method="get" class="mb-3">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        placeholder="Buscar por nombre, categoria, proveedor ..."
+                        value="{{ search }}"
+                    >
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
             <table class="table table-custom table-hover">
                 <thead>
                     <tr>
@@ -129,6 +145,16 @@
                             <a href="{% url 'dashboard:editar_producto' p.id %}" class="btn btn-sm btn-outline-primary border-0" title="Editar">
                                 <i class="bi bi-pencil-square fs-5"></i>
                             </a>
+
+                            <form action="{% url 'dashboard:eliminar_producto' p.id %}" method="POST" 
+                                onsubmit="return confirm('¿Seguro que deseas eliminar este registro?');">
+                                
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-light text-danger border"
+                                    title="Eliminar">
+                                     <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% empty %}
@@ -140,6 +166,46 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <!-- Paginación -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+
+                    {% if productos.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ productos.previous_page_number }}&search={{ search }}">
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in productos.paginator.page_range %}
+                        {% if productos.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > productos.number|add:'-3' and num < productos.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page={{ num }}&search={{ search }}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if productos.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ productos.next_page_number }}&search={{ search }}">
+                                Siguiente
+                            </a>
+                        </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
         </div>
     </div>
 </div>

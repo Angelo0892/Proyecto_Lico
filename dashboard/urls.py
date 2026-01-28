@@ -44,6 +44,9 @@ urlpatterns = [
     path('eliminar/categoria/<int:pk>/', views.eliminar_categoria, name='eliminar_categoria'),
     path('eliminar/proveedor/<int:pk>/', views.eliminar_proveedor, name='eliminar_proveedor'),
     path('eliminar/cliente/<int:pk>/', views.eliminar_cliente, name='eliminar_cliente'),
+    path('eliminar/producto/<int:pk>/', views.eliminar_producto, name='eliminar_producto'),
+    path('eliminar/importacion/<int:pk>/', views.eliminar_importacion, name='eliminar_importacion'),
+
     
     # --- Direcciones para busqueda a tiempo real ---
     path('buscar/clientes/', views.buscar_clientes, name='buscar_clientes'),
