@@ -801,17 +801,30 @@ def lista_proveedores(request):
 @permiso_requerido('modulo_facturacion')
 def lista_facturas(request):
     # Traemos facturas con datos de cliente
+    search = request.GET.get ('search', '')
+
     facturas = Factura.objects.select_related('venta__cliente').all().order_by('-fecha_emision')
+    lista_facturas = Factura.objects.select_related('venta__cliente').all().order_by('-fecha_emision')
+
+    if search:
+        facturas = facturas.filter(
+            Q(numero_factura__icontains=search) |
+            Q(nit_cliente__icontains=search)
+        )
+
+    paginacion = Paginator(facturas, 10)
+    numero_pagina = request.GET.get('page')
+    facturas = paginacion.get_page(numero_pagina)
 
     # KPIs rápidos
     mes_actual = timezone.now().date().replace(day=1)
     
-    total_mes = facturas.filter(
+    total_mes = lista_facturas.filter(
         fecha_emision__gte=mes_actual, 
         estado=True 
     ).aggregate(Sum('monto_total'))['monto_total__sum'] or 0
 
-    cantidad_anuladas = facturas.filter(estado=False).count()
+    cantidad_anuladas = lista_facturas.filter(estado=False).count()
 
     context = {
         'datos': facturas,

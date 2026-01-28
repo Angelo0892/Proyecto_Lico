@@ -88,6 +88,20 @@
         </div>
 
         <div class="table-responsive">
+            <form method="get" class="mb-3">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        placeholder="Buscar por nit o numero de factura..."
+                        value="{{ search }}"
+                    >
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
             <table class="table table-custom table-hover">
                 <thead>
                     <tr>
@@ -143,6 +157,46 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <!-- Paginación -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+
+                    {% if datos.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ datos.previous_page_number }}&search={{ search }}">
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in datos.paginator.page_range %}
+                        {% if datos.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > datos.number|add:'-3' and num < datos.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page={{ num }}&search={{ search }}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if datos.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ datos.next_page_number }}&search={{ search }}">
+                                Siguiente
+                            </a>
+                        </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
