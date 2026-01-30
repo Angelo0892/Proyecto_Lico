@@ -38,6 +38,18 @@ class ProductoForm(forms.ModelForm):
             'proveedor': forms.Select(attrs={'class': 'form-select'}),
         }
 
+        def clean_precio_compra(self):
+            precio = self.cleaned_data.get('precio_compra')
+            if precio is not None and precio < 0:
+                raise forms.ValidationError("El precio de compra no puede ser negativo.")
+            return precio
+
+        def clean_precio_venta(self):
+            precio = self.cleaned_data.get('precio_venta')
+            if precio is not None and precio < 0:
+                raise forms.ValidationError("El precio de venta no puede ser negativo.")
+            return precio
+
 # 3. FORMULARIO DE IMPORTACIONES (Cabecera)
 class ImportacionForm(forms.ModelForm):
     class Meta:

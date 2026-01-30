@@ -202,8 +202,8 @@ document.getElementById('tablaProductos').onclick = e => {
     tablaVenta.insertAdjacentHTML('beforeend', `
     <tr data-id="${id}">
         <td>${tr.dataset.nombre}</td>
-        <td><input type="number" class="form-control cant" value="1" min="1"></td>
-        <td><input type="number" class="form-control precio" value="${tr.dataset.precio}" step="0.01"></td>
+        <td><input type="number" class="form-control cant" value="1" min="1" ></td>
+        <td><input type="number" class="form-control precio" value="${tr.dataset.precio}" min="0" step="0.01"></td>
         <td class="total">${tr.dataset.precio}</td>
         <td><button type="button" class="btn btn-sm btn-danger">✕</button></td>
     </tr>
@@ -230,6 +230,14 @@ document.getElementById('ventaForm').addEventListener('submit', function(){
         <input type="hidden" name="precio[]" value="${r.querySelector('.precio').value}">
         `);
     });
+});
+
+document.getElementById('ventaForm').addEventListener('submit', function(e){
+    if (parseFloat(totalCompra.textContent) <= 0) {
+        e.preventDefault();
+        alert("El total de la venta debe ser mayor a 0");
+        return;
+    }
 });
 
 });

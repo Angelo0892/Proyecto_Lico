@@ -9,7 +9,7 @@ from django.forms import inlineformset_factory
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from decimal import Decimal
 from django.template.loader import render_to_string
 from django.contrib import messages
@@ -528,6 +528,57 @@ def crear_usuario(request):
 
 @login_required
 @permiso_requerido('modulo_usuarios')
+@user_passes_test(lambda u: u.is_superuser)
+def editar_usuario(request, pk):
+    usuario = get_object_or_404(Usuario, id=pk)
+    user = usuario.user
+
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST)
+
+        if form.is_valid():
+            # ===== USER =====
+            user.username = form.cleaned_data['username']
+            user.email = form.cleaned_data['email']
+
+            if form.cleaned_data['password']:
+                user.set_password(form.cleaned_data['password'])
+
+            es_super = form.cleaned_data['es_superusuario']
+            user.is_superuser = es_super
+            user.is_staff = es_super
+            user.save()
+
+            # ===== PERFIL =====
+            usuario.nombre = form.cleaned_data['nombre']
+            usuario.apellido = form.cleaned_data['apellido']
+            usuario.rol = form.cleaned_data['rol']
+            usuario.activo = form.cleaned_data['activo']
+            usuario.save()
+
+            messages.success(request, "Usuario actualizado correctamente")
+            return redirect('dashboard:usuarios')
+
+    else:
+        form = UsuarioForm(initial={
+            'username': user.username,
+            'email': user.email,
+            'nombre': usuario.nombre,
+            'apellido': usuario.apellido,
+            'rol': usuario.rol,
+            'activo': usuario.activo,
+            'es_superusuario': user.is_superuser
+        })
+
+    return render(request, 'dashboard/form_usuario.html', {
+        'form': form,
+        'usuario': usuario,
+        'es_rol': True
+    })
+
+
+@login_required
+@permiso_requerido('modulo_usuarios')
 def crear_rol(request):
     if request.method == 'POST':
         form = RolForm(request.POST)
@@ -626,19 +677,46 @@ def resumen_confirmar_venta(request):
     if request.method != "POST":
         return redirect("dashboard:crear_venta")
 
-    cliente = Cliente.objects.get(id=request.POST.get("cliente_id"))
+    cliente_id = request.POST.get("cliente_id")
+
+    if not cliente_id:
+        return HttpResponseBadRequest("Debe seleccionar un cliente")
+
+    try:
+        cliente = Cliente.objects.get(id=request.POST.get("cliente_id"))
+    except Cliente.DoesNotExist:
+        return HttpResponseBadRequest("Cliente inválido")
 
     productos = request.POST.getlist("producto_id[]")
     cantidades = request.POST.getlist("cantidad[]")
     precios = request.POST.getlist("precio[]")
 
+    if not productos:
+        return HttpResponseBadRequest("No hay productos en la venta")
+
     detalle = []
-    total = Decimal("0")
+    total = Decimal("0.00")
 
     for i in range(len(productos)):
-        producto = Producto.objects.get(id=productos[i])
-        cantidad = int(cantidades[i])
-        precio = Decimal(precios[i])
+        try:
+            producto = Producto.objects.get(id=productos[i])
+            cantidad = int(cantidades[i])
+            precio = Decimal(precios[i])
+        except:
+            return HttpResponseBadRequest("Datos inválidos")
+
+        # 🔒 VALIDACIONES CLAVE
+        if cantidad <= 0:
+            return HttpResponseBadRequest("La cantidad debe ser mayor a 0")
+
+        if precio < 0:
+            return HttpResponseBadRequest("El precio no puede ser negativo")
+
+        if cantidad > producto.stock_actual:
+            return HttpResponseBadRequest(
+                f"Stock insuficiente para {producto.nombre}"
+            )
+
         subtotal = cantidad * precio
         total += subtotal
 
@@ -649,6 +727,9 @@ def resumen_confirmar_venta(request):
             "precio": precio,
             "subtotal": subtotal
         })
+
+    if total <= 0:
+        return HttpResponseBadRequest("El total de la venta es inválido")
 
     return render(request, "dashboard/confirmar_venta.html", {
         "cliente": cliente,
@@ -1005,7 +1086,7 @@ def lista_venta_productos(request):
     return render(request, "dashboard/form_venta.html", {"productos": productos})
 
 @login_required
-@permiso_requerido('modulo_inventario')
+@permiso_requerido('modulo_ventas')
 def buscar_productos_ajax(request):
     query = request.GET.get("q", "")
     page = request.GET.get("page", 1)

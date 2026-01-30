@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.conf import settings
+from django.core.validators import MinValueValidator
 
 # ==========================================
 # 1. CATALOGOS Y CONFIGURACIÓN
@@ -127,10 +128,10 @@ class Producto(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.SET_NULL, null=True)
     ubicacion = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True)
     
-    precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
-    precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
-    stock_actual = models.IntegerField(default=0)
-    stock_minimo = models.IntegerField(default=5)
+    precio_compra = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    precio_venta = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    stock_actual = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    stock_minimo = models.IntegerField(default=5, validators=[MinValueValidator(0)])
     
     # Campo extra para compatibilidad con dashboard
     tipo = models.CharField(max_length=20, default='Varios') # VINO, RON, etc.
@@ -144,7 +145,7 @@ class Importacion(models.Model): # Tabla Importaciones
     fecha_pedido = models.DateField()
     fecha_llegada = models.DateField(blank=True, null=True)
     estado = models.CharField(max_length=20, default='PLANIFICADO')
-    total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     observacion = models.TextField(blank=True, null=True)
 
     stock_ingresado = models.BooleanField(default=False)
@@ -164,8 +165,8 @@ class Importacion(models.Model): # Tabla Importaciones
 class DetalleImportacion(models.Model):
     importacion = models.ForeignKey(Importacion, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.IntegerField()
-    costo_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    cantidad = models.IntegerField(validators=[MinValueValidator(0)])
+    costo_unitario = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
 
     class Meta:
         verbose_name_plural = "Detalles de Importación"
@@ -184,7 +185,7 @@ class Venta(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
-    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     observacion = models.TextField(blank=True, null=True)
     
     # 2. VINCULAMOS LAS OPCIONES AL CAMPO 'estado'
@@ -197,16 +198,16 @@ class Venta(models.Model):
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.IntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    cantidad = models.IntegerField(validators=[MinValueValidator(0)])
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
 
 class Factura(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     numero_factura = models.CharField(max_length=50, unique=True)
     fecha_emision = models.DateTimeField(auto_now_add=True)
     nit_cliente = models.CharField(max_length=20)
-    monto_total = models.DecimalField(max_digits=10, decimal_places=2)
+    monto_total = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     estado = models.BooleanField(default=True) # Activa/Anulada
 
     def __str__(self): return f"Factura {self.numero_factura}"
@@ -214,7 +215,7 @@ class Factura(models.Model):
 class Pago(models.Model):
     factura = models.ForeignKey(Factura, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
+    monto = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     metodo_pago = models.ForeignKey(MetodoPago, on_delete=models.SET_NULL, null=True)
     referencia = models.CharField(max_length=100, blank=True, null=True) # Nro recibo/transaccion
 
@@ -232,7 +233,7 @@ class Devolucion(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
     motivo = models.TextField()
-    total_reembolsado = models.DecimalField(max_digits=10, decimal_places=2)
+    total_reembolsado = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     estado = models.CharField(max_length=20, default='PENDIENTE')
 
     class Meta:
@@ -241,7 +242,7 @@ class Devolucion(models.Model):
 class DetalleDevolucion(models.Model):
     devolucion = models.ForeignKey(Devolucion, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.IntegerField()
+    cantidad = models.IntegerField(validators=[MinValueValidator(0)])
     observacion = models.CharField(max_length=150, blank=True)
 
 class Auditoria(models.Model):

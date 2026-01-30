@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 app_name = 'dashboard'  # <--- ESTO ES CRUCIAL para que funcione tu base.html
 
@@ -9,6 +10,7 @@ urlpatterns = [
     path('ventas/', views.dashboard_ventas, name='ventas'),
     path('inventario/', views.dashboard_inventario, name='inventario'),
     path('importaciones/', views.dashboard_importaciones, name='importaciones'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # --- NUEVAS SECCIONES (Según tu Base de Datos) ---
     path('clientes/', views.lista_clientes, name='clientes'),        # Tabla Clientes
@@ -40,6 +42,7 @@ urlpatterns = [
     path('editar/producto/<int:pk>/', views.editar_producto, name='editar_producto'),
     path('editar/proveedor/<int:pk>/', views.editar_proveedor, name='editar_proveedor'),
     path('editar/cliente/<int:pk>/', views.editar_cliente, name='editar_cliente'),
+    path('editar/usuario/<int:pk>/', views.editar_usuario, name='editar_usuario'),
     
     # --- Direcciones de eliminacion ---
     path('eliminar/categoria/<int:pk>/', views.eliminar_categoria, name='eliminar_categoria'),

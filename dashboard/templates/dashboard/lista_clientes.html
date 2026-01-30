@@ -91,8 +91,6 @@
                         <th>Documento (CI/NIT)</th>
                         <th>Tipo</th>
                         <th>Contacto</th>
-                        <th class="text-end">Crédito</th>
-                        <th class="text-center">Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -110,14 +108,6 @@
                             <span class="badge-tipo">{{ c.tipo_cliente }}</span>
                         </td>
                         <td>{{ c.telefono }}</td>
-                        <td class="text-end fw-bold text-secondary">${{ c.limite_credito|floatformat:2 }}</td>
-                        <td class="text-center">
-                            {% if c.activo %}
-                                <span class="badge-activo">Activo</span>
-                            {% else %}
-                                <span class="badge-inactivo">Inactivo</span>
-                            {% endif %}
-                        </td>
                         <td class="text-center">
                             <a href="{% url 'dashboard:editar_cliente' c.id %}" class="btn btn-sm btn-light text-primary border" title="Editar">
                                 <i class="bi bi-pencil"></i>

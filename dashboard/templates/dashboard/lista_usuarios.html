@@ -76,7 +76,9 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-pencil"></i></button>
+                                    <a href="{% url 'dashboard:editar_usuario' u.id %}" class="btn btn-sm btn-light border" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
                                 </td>
                             </tr>
                             {% empty %}
@@ -132,9 +134,6 @@
             <div class="chart-card">
                 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                     <h5 class="m-0 fw-bold text-dark"><i class="bi bi-shield-lock text-warning"></i> Roles</h5>
-                    <a href="{% url 'dashboard:crear_rol' %}" class="btn btn-warning btn-sm text-dark shadow-sm">
-                        <i class="bi bi-plus-lg"></i> Rol
-                    </a>
                 </div>
 
                 <div class="table-responsive">

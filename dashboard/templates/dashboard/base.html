@@ -95,7 +95,7 @@
 
             {% if request.user|tiene_permiso:"modulo_ventas" %}
             <li class="nav-item">
-                <a href="{% url 'dashboard:devoluciones' %}" class="nav-link {% if request.resolver_match.url_name == 'ventas' %}active{% endif %}">
+                <a href="{% url 'dashboard:devoluciones' %}" class="nav-link {% if request.resolver_match.url_name == 'devoluciones' %}active{% endif %}">
                     <i class="bi bi-cart3"></i> Devoluciones
                 </a>
             </li>
@@ -160,12 +160,6 @@
                 </a>
             </li>
             {% endif %}
-            
-            <li class="nav-item">
-                <a href="/admin/" target="_blank" class="nav-link">
-                    <i class="bi bi-shield-lock"></i> Panel Admin
-                </a>
-            </li>
         </ul>
         
         <div class="mt-auto p-3 border-top border-secondary">
@@ -175,6 +169,17 @@
                 <span>{{ user.username|default:"Admin" }}</span>
             </div>
         </div>
+
+        <!-- BOTÓN LOGOUT -->
+        <form method="post" action="{% url 'dashboard:logout' %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center">
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Cerrar sesión
+            </button>
+        </form>
+
     </nav>
 
     <div class="main-wrapper">

@@ -114,13 +114,6 @@
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
 
-                                        <!-- Editar -->
-                                        <a href="/admin/dashboard/importacion/{{ imp.id }}/change/"
-                                        class="btn btn-sm btn-outline-primary"
-                                        title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-
                                         <!-- Recibir productos -->
                                         {% if imp.estado != "RECIBIDO" %}
                                         <a href="{% url 'dashboard:recibir_importacion' imp.id %}"
