@@ -413,7 +413,6 @@ def guardar_importacion(request):
         return redirect("dashboard:importaciones")   
 
 @transaction.atomic
-@permiso_requerido('modulo_importacion')
 def ingresar_stock_importacion(importacion):
     if importacion.stock_ingresado:
         return  # ⚠️ Evita doble ingreso
@@ -680,19 +679,22 @@ def resumen_confirmar_venta(request):
     cliente_id = request.POST.get("cliente_id")
 
     if not cliente_id:
-        return HttpResponseBadRequest("Debe seleccionar un cliente")
+        messages.error(request, "Debe seleccionar un cliente")
+        return redirect("dashboard:crear_venta")
 
     try:
-        cliente = Cliente.objects.get(id=request.POST.get("cliente_id"))
+        cliente = Cliente.objects.get(id=cliente_id)
     except Cliente.DoesNotExist:
-        return HttpResponseBadRequest("Cliente inválido")
+        messages.error(request, "Cliente inválido")
+        return redirect("dashboard:crear_venta")
 
     productos = request.POST.getlist("producto_id[]")
     cantidades = request.POST.getlist("cantidad[]")
     precios = request.POST.getlist("precio[]")
 
     if not productos:
-        return HttpResponseBadRequest("No hay productos en la venta")
+        messages.error(request, "Debe agregar al menos un producto")
+        return redirect("dashboard:crear_venta")
 
     detalle = []
     total = Decimal("0.00")
@@ -702,20 +704,24 @@ def resumen_confirmar_venta(request):
             producto = Producto.objects.get(id=productos[i])
             cantidad = int(cantidades[i])
             precio = Decimal(precios[i])
-        except:
-            return HttpResponseBadRequest("Datos inválidos")
+        except Exception:
+            messages.error(request, "Datos inválidos en la venta")
+            return redirect("dashboard:crear_venta")
 
-        # 🔒 VALIDACIONES CLAVE
         if cantidad <= 0:
-            return HttpResponseBadRequest("La cantidad debe ser mayor a 0")
+            messages.error(request, "La cantidad debe ser mayor a 0")
+            return redirect("dashboard:crear_venta")
 
         if precio < 0:
-            return HttpResponseBadRequest("El precio no puede ser negativo")
+            messages.error(request, "El precio no puede ser negativo")
+            return redirect("dashboard:crear_venta")
 
         if cantidad > producto.stock_actual:
-            return HttpResponseBadRequest(
+            messages.error(
+                request,
                 f"Stock insuficiente para {producto.nombre}"
             )
+            return redirect("dashboard:crear_venta")
 
         subtotal = cantidad * precio
         total += subtotal
@@ -729,7 +735,8 @@ def resumen_confirmar_venta(request):
         })
 
     if total <= 0:
-        return HttpResponseBadRequest("El total de la venta es inválido")
+        messages.error(request, "El total de la venta es inválido")
+        return redirect("dashboard:crear_venta")
 
     return render(request, "dashboard/confirmar_venta.html", {
         "cliente": cliente,
@@ -737,6 +744,7 @@ def resumen_confirmar_venta(request):
         "total": total,
         "metodos_pago": MetodoPago.objects.all()
     })
+
 
 @login_required
 @permiso_requerido('modulo_ventas')

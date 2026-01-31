@@ -94,7 +94,7 @@ class Cliente(models.Model):
     direccion = models.CharField(max_length=200, blank=True, null=True)
     telefono = models.CharField(max_length=30)
     email = models.EmailField(blank=True, null=True)
-    tipo_cliente = models.CharField(max_length=20, choices=[('MINORISTA', 'Minorista'), ('MAYORISTA', 'Mayorista')], default='MINORISTA')
+    tipo_cliente = models.CharField(max_length=20, choices=[('MINORISTA', 'Minorista'), ('MAYORISTA', 'Mayorista'), ('BAR', 'Bar')], default='MINORISTA')
     
     # Campo extra para que funcione tu dashboard (aunque no esté en el diagrama original es vital)
     limite_credito = models.DecimalField(max_digits=10, decimal_places=2, default=0)
